@@ -4,7 +4,7 @@
 -- 说明：此文件包含所有数据库表结构和字段
 -- 适用于全新安装，直接执行即可
 -- 如果数据库已存在，请先备份数据
--- 版本：2024最新版（包含注册码6位、拍摄链接码8位、EXIF数据支持）
+-- 版本：2024最新版（包含注册码6位、拍摄链接码8位、EXIF数据支持、HTML/Markdown内容类型支持）
 -- ============================================
 
 -- 创建数据库
@@ -349,6 +349,7 @@ CREATE TABLE IF NOT EXISTS `points_shop` (
   `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '商品ID',
   `name` VARCHAR(100) NOT NULL COMMENT '商品名称',
   `description` TEXT DEFAULT NULL COMMENT '商品描述',
+  `description_type` VARCHAR(20) DEFAULT 'auto' COMMENT '描述类型：plain-纯文本, html-HTML, markdown-Markdown, auto-自动检测',
   `type` VARCHAR(50) NOT NULL COMMENT '商品类型：vip_temporary-临时VIP, vip_permanent-永久VIP, invite_limit-邀请链接数量',
   `points_price` INT(11) NOT NULL COMMENT '所需积分',
   `value` INT(11) DEFAULT NULL COMMENT '商品数值（如VIP天数、邀请链接数量等）',
@@ -394,6 +395,7 @@ CREATE TABLE IF NOT EXISTS `announcements` (
   `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '公告ID',
   `title` VARCHAR(255) NOT NULL COMMENT '公告标题',
   `content` TEXT NOT NULL COMMENT '公告内容',
+  `content_type` VARCHAR(20) DEFAULT 'auto' COMMENT '内容类型：plain-纯文本, html-HTML, markdown-Markdown, auto-自动检测',
   `level` ENUM('important', 'normal', 'notice') NOT NULL DEFAULT 'normal' COMMENT '公告级别：important-重要, normal-一般, notice-通知',
   `require_read` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否强制已读：1-是，0-否',
   `is_visible` TINYINT(1) NOT NULL DEFAULT 1 COMMENT '是否显示：1-是，0-否',

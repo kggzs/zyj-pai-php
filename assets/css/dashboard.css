@@ -239,6 +239,61 @@ body {
     margin-bottom: 8px;
 }
 
+/* 公告内容中的链接样式 */
+.announcement-content-user a {
+    color: rgba(255, 255, 255, 0.95);
+    text-decoration: underline;
+    transition: opacity 0.2s;
+}
+
+.announcement-content-user a:hover {
+    opacity: 0.8;
+    text-decoration: underline;
+}
+
+.announcement-content-user a.nav-btn {
+    display: inline-block;
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.3s;
+    margin: 5px 5px 5px 0;
+}
+
+.announcement-content-user a.nav-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+/* 公告内容中的表格样式 */
+.announcement-content-user table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.announcement-content-user table th,
+.announcement-content-user table td {
+    padding: 8px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    text-align: left;
+}
+
+.announcement-content-user table th {
+    background: rgba(255, 255, 255, 0.15);
+    font-weight: bold;
+}
+
+.announcement-content-user table tr:nth-child(even) {
+    background: rgba(255, 255, 255, 0.05);
+}
+
 .announcement-mark-read-btn {
     background: rgba(255, 255, 255, 0.2);
     color: white;

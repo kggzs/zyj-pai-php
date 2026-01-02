@@ -1885,10 +1885,10 @@ function renderAnnouncements(data) {
             <div class="announcement-item-user ${unreadClass}" data-id="${announcement.id}">
                 <div class="announcement-header-user">
                     <span class="announcement-level ${level.class}">${level.icon} ${level.text}</span>
-                    <span class="announcement-title-user">${announcement.title}</span>
+                    <span class="announcement-title-user">${escapeHtml(announcement.title)}</span>
                     ${(!isRead && requireRead) ? '<span class="announcement-unread-badge">未读</span>' : ''}
                 </div>
-                <div class="announcement-content-user">${announcement.content}</div>
+                <div class="announcement-content-user" data-content-type="${announcement.content_type || 'auto'}"></div>
                 ${requireRead && !isRead ? 
                     `<button class="announcement-mark-read-btn" onclick="markAnnouncementRead(${announcement.id})">标记已读</button>` : 
                     ''
@@ -1899,6 +1899,18 @@ function renderAnnouncements(data) {
     
     html += '</div>';
     document.getElementById('announcementsContainer').innerHTML = html;
+    
+    // 渲染内容（支持HTML和Markdown）
+    document.querySelectorAll('.announcement-content-user').forEach(async (el) => {
+        const item = el.closest('.announcement-item-user');
+        const announcementId = parseInt(item.getAttribute('data-id'));
+        const announcement = list.find(a => a.id == announcementId);
+        if (announcement && announcement.content) {
+            const content = announcement.content;
+            const contentType = announcement.content_type || 'auto';
+            el.innerHTML = await renderContent(content, contentType);
+        }
+    });
 }
 
 // 标记公告为已读
@@ -1997,7 +2009,7 @@ function displayShopProducts(products) {
                     </div>
                 </div>
                 
-                ${product.description ? `<div style="font-size: 14px; color: #666; margin-bottom: 15px; line-height: 1.5;">${product.description}</div>` : ''}
+                ${product.description ? `<div class="shop-product-description" style="font-size: 14px; color: #666; margin-bottom: 15px; line-height: 1.5;" data-content-type="${product.description_type || 'auto'}"></div>` : ''}
                 
                 <div style="border-top: 1px solid #f0f0f0; padding-top: 15px; margin-top: 15px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
@@ -2020,6 +2032,31 @@ function displayShopProducts(products) {
     }).join('');
     
     container.innerHTML = html;
+    
+    // 渲染商品描述（支持HTML和Markdown）
+    // 需要找到对应的商品，因为HTML中可能没有按顺序排列
+    document.querySelectorAll('.shop-product-description').forEach(async (el) => {
+        // 通过父元素找到商品ID
+        const productCard = el.closest('div[style*="background: white"]');
+        if (!productCard) return;
+        
+        // 从按钮的onclick中提取商品ID
+        const exchangeBtn = productCard.querySelector('button[onclick*="exchangeProduct"]');
+        if (!exchangeBtn) return;
+        
+        const onclickAttr = exchangeBtn.getAttribute('onclick');
+        const match = onclickAttr.match(/exchangeProduct\((\d+)\)/);
+        if (!match) return;
+        
+        const productId = parseInt(match[1]);
+        const product = products.find(p => p.id == productId);
+        
+        if (product && product.description) {
+            const content = product.description;
+            const contentType = product.description_type || 'auto';
+            el.innerHTML = await renderContent(content, contentType);
+        }
+    });
 }
 
 // 兑换商品

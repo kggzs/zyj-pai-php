@@ -1,5 +1,71 @@
 @import url('common.css');
 
+/* 公告内容样式 */
+.admin-announcement-content {
+    line-height: 1.6;
+    word-break: break-word;
+}
+
+.admin-announcement-content a {
+    color: #5B9BD5;
+    text-decoration: underline;
+    transition: color 0.2s;
+}
+
+.admin-announcement-content a:hover {
+    color: #4A8BC2;
+    text-decoration: underline;
+}
+
+.admin-announcement-content a.nav-btn {
+    display: inline-block;
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #87CEEB 0%, #5B9BD5 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: all 0.3s;
+    margin: 5px 5px 5px 0;
+    border: none;
+}
+
+.admin-announcement-content a.nav-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(91, 155, 213, 0.3);
+}
+
+/* 公告内容中的表格样式 */
+.admin-announcement-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+    background: white;
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.admin-announcement-content table th,
+.admin-announcement-content table td {
+    padding: 8px 12px;
+    border: 1px solid #e0e0e0;
+    text-align: left;
+}
+
+.admin-announcement-content table th {
+    background: #f8f9fa;
+    font-weight: bold;
+    color: #333;
+}
+
+.admin-announcement-content table tr:nth-child(even) {
+    background: #f8f9fa;
+}
+
+.admin-announcement-content table tr:hover {
+    background: #f0f4ff;
+}
+
 /* 系统设置样式 */
 .settings-tabs {
     display: flex;

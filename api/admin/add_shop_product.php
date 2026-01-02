@@ -17,6 +17,7 @@ if (!$adminModel->isLoggedIn()) {
 try {
     $name = isset($_POST['name']) ? trim($_POST['name']) : '';
     $description = isset($_POST['description']) ? trim($_POST['description']) : '';
+    $descriptionType = isset($_POST['description_type']) ? trim($_POST['description_type']) : 'auto';
     $type = isset($_POST['type']) ? trim($_POST['type']) : '';
     $pointsPrice = isset($_POST['points_price']) ? (int)$_POST['points_price'] : 0;
     $value = isset($_POST['value']) && $_POST['value'] !== '' ? (int)$_POST['value'] : null;
@@ -25,7 +26,7 @@ try {
     $sortOrder = isset($_POST['sort_order']) ? (int)$_POST['sort_order'] : 0;
     
     $shopModel = new Shop();
-    $result = $shopModel->addProduct($name, $description, $type, $pointsPrice, $value, $totalStock, $maxPerUser, $sortOrder);
+    $result = $shopModel->addProduct($name, $description, $type, $pointsPrice, $value, $totalStock, $maxPerUser, $sortOrder, $descriptionType);
     
     echo json_encode($result);
     

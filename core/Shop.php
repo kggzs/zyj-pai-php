@@ -12,7 +12,7 @@ class Shop {
     /**
      * 添加商品
      */
-    public function addProduct($name, $description, $type, $pointsPrice, $value = null, $totalStock = null, $maxPerUser = null, $sortOrder = 0) {
+    public function addProduct($name, $description, $type, $pointsPrice, $value = null, $totalStock = null, $maxPerUser = null, $sortOrder = 0, $descriptionType = 'auto') {
         // 验证商品类型
         $validTypes = ['vip_temporary', 'vip_permanent', 'invite_limit'];
         if (!in_array($type, $validTypes)) {
@@ -29,11 +29,16 @@ class Shop {
             return ['success' => false, 'message' => '该商品类型需要设置数值'];
         }
         
+        // 验证描述类型
+        if (!in_array($descriptionType, ['plain', 'html', 'markdown', 'auto'])) {
+            $descriptionType = 'auto';
+        }
+        
         try {
             $this->db->execute(
-                "INSERT INTO points_shop (name, description, type, points_price, value, total_stock, max_per_user, sort_order, status) 
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)",
-                [$name, $description, $type, $pointsPrice, $value, $totalStock, $maxPerUser, $sortOrder]
+                "INSERT INTO points_shop (name, description, description_type, type, points_price, value, total_stock, max_per_user, sort_order, status) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)",
+                [$name, $description, $descriptionType, $type, $pointsPrice, $value, $totalStock, $maxPerUser, $sortOrder]
             );
             
             return ['success' => true, 'message' => '商品添加成功', 'id' => $this->db->lastInsertId()];
@@ -46,7 +51,7 @@ class Shop {
     /**
      * 更新商品
      */
-    public function updateProduct($id, $name, $description, $type, $pointsPrice, $value = null, $totalStock = null, $maxPerUser = null, $sortOrder = 0, $status = 1) {
+    public function updateProduct($id, $name, $description, $type, $pointsPrice, $value = null, $totalStock = null, $maxPerUser = null, $sortOrder = 0, $status = 1, $descriptionType = 'auto') {
         // 验证商品是否存在
         $product = $this->db->fetchOne("SELECT id FROM points_shop WHERE id = ?", [$id]);
         if (!$product) {
@@ -59,11 +64,16 @@ class Shop {
             return ['success' => false, 'message' => '无效的商品类型'];
         }
         
+        // 验证描述类型
+        if (!in_array($descriptionType, ['plain', 'html', 'markdown', 'auto'])) {
+            $descriptionType = 'auto';
+        }
+        
         try {
             $this->db->execute(
-                "UPDATE points_shop SET name = ?, description = ?, type = ?, points_price = ?, value = ?, 
+                "UPDATE points_shop SET name = ?, description = ?, description_type = ?, type = ?, points_price = ?, value = ?, 
                  total_stock = ?, max_per_user = ?, sort_order = ?, status = ? WHERE id = ?",
-                [$name, $description, $type, $pointsPrice, $value, $totalStock, $maxPerUser, $sortOrder, $status, $id]
+                [$name, $description, $descriptionType, $type, $pointsPrice, $value, $totalStock, $maxPerUser, $sortOrder, $status, $id]
             );
             
             return ['success' => true, 'message' => '商品更新成功'];

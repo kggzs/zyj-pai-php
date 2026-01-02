@@ -18,6 +18,7 @@ try {
     $id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
     $name = isset($_POST['name']) ? trim($_POST['name']) : '';
     $description = isset($_POST['description']) ? trim($_POST['description']) : '';
+    $descriptionType = isset($_POST['description_type']) ? trim($_POST['description_type']) : 'auto';
     $type = isset($_POST['type']) ? trim($_POST['type']) : '';
     $pointsPrice = isset($_POST['points_price']) ? (int)$_POST['points_price'] : 0;
     $value = isset($_POST['value']) && $_POST['value'] !== '' ? (int)$_POST['value'] : null;
@@ -32,7 +33,7 @@ try {
     }
     
     $shopModel = new Shop();
-    $result = $shopModel->updateProduct($id, $name, $description, $type, $pointsPrice, $value, $totalStock, $maxPerUser, $sortOrder, $status);
+    $result = $shopModel->updateProduct($id, $name, $description, $type, $pointsPrice, $value, $totalStock, $maxPerUser, $sortOrder, $status, $descriptionType);
     
     echo json_encode($result);
     

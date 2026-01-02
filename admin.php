@@ -291,6 +291,16 @@ if (!$adminModel->isLoggedIn()) {
                     <input type="text" id="announcementTitle" class="form-control" placeholder="请输入公告标题">
                 </div>
                 <div class="form-group">
+                    <label for="announcementContentType">内容类型：</label>
+                    <select id="announcementContentType" class="form-control" onchange="updateContentTypeHint()">
+                        <option value="plain">纯文本</option>
+                        <option value="html">HTML</option>
+                        <option value="markdown">Markdown</option>
+                        <option value="auto" selected>自动检测</option>
+                    </select>
+                    <small id="contentTypeHint" style="color: #666; display: block; margin-top: 5px;">系统将自动检测内容格式</small>
+                </div>
+                <div class="form-group">
                     <label for="announcementContent">内容：</label>
                     <textarea id="announcementContent" class="form-control" rows="8" placeholder="请输入公告内容"></textarea>
                 </div>
@@ -336,6 +346,7 @@ if (!$adminModel->isLoggedIn()) {
         </div>
     </div>
 
+    <script src="assets/js/content-renderer.js"></script>
     <script src="assets/js/admin.js"></script>
 </body>
 </html>

@@ -181,4 +181,70 @@ class Helper {
         
         return true;
     }
+    
+    /**
+     * 检测内容类型（plain/html/markdown）
+     */
+    public static function detectContentType($content) {
+        if (empty($content)) {
+            return 'plain';
+        }
+        
+        // 检测是否包含HTML标签
+        if (preg_match('/<[a-z][\s\S]*>/i', $content)) {
+            return 'html';
+        }
+        
+        // 检测是否包含Markdown语法
+        $markdownPatterns = [
+            '/^#{1,6}\s+/m',           // 标题
+            '/\*\*.*?\*\*/',            // 粗体
+            '/\*.*?\*/',                // 斜体
+            '/\[.*?\]\(.*?\)/',         // 链接
+            '/!\[.*?\]\(.*?\)/',        // 图片
+            '/^[-*+]\s+/m',             // 无序列表
+            '/^\d+\.\s+/m',             // 有序列表
+            '/^>\s+/m',                 // 引用
+            '/```/',                    // 代码块
+            '/`[^`]+`/',                // 行内代码
+        ];
+        
+        foreach ($markdownPatterns as $pattern) {
+            if (preg_match($pattern, $content)) {
+                return 'markdown';
+            }
+        }
+        
+        return 'plain';
+    }
+    
+    /**
+     * 渲染内容（支持plain/html/markdown）
+     * 注意：Markdown需要在客户端使用JavaScript库解析
+     */
+    public static function renderContent($content, $contentType = null) {
+        if (empty($content)) {
+            return '';
+        }
+        
+        // 如果没有指定类型，自动检测
+        if ($contentType === null) {
+            $contentType = self::detectContentType($content);
+        }
+        
+        switch ($contentType) {
+            case 'html':
+                // HTML内容需要转义，防止XSS（实际渲染时在前端使用DOMPurify）
+                return htmlspecialchars($content, ENT_QUOTES, 'UTF-8');
+            
+            case 'markdown':
+                // Markdown内容也需要转义，在前端解析
+                return htmlspecialchars($content, ENT_QUOTES, 'UTF-8');
+            
+            case 'plain':
+            default:
+                // 纯文本，转义HTML特殊字符并保留换行
+                return nl2br(htmlspecialchars($content, ENT_QUOTES, 'UTF-8'));
+        }
+    }
 }

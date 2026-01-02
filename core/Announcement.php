@@ -19,18 +19,24 @@ class Announcement {
      * @param bool $isVisible 是否显示
      * @return array
      */
-    public function createAnnouncement($adminId, $title, $content, $level = 'normal', $requireRead = false, $isVisible = true) {
+    public function createAnnouncement($adminId, $title, $content, $level = 'normal', $requireRead = false, $isVisible = true, $contentType = 'auto') {
         // 验证级别
         if (!in_array($level, ['important', 'normal', 'notice'])) {
             $level = 'normal';
         }
         
-        $sql = "INSERT INTO announcements (title, content, level, require_read, is_visible, admin_id) 
-                VALUES (?, ?, ?, ?, ?, ?)";
+        // 验证内容类型
+        if (!in_array($contentType, ['plain', 'html', 'markdown', 'auto'])) {
+            $contentType = 'auto';
+        }
+        
+        $sql = "INSERT INTO announcements (title, content, content_type, level, require_read, is_visible, admin_id) 
+                VALUES (?, ?, ?, ?, ?, ?, ?)";
         
         $this->db->execute($sql, [
             $title,
             $content,
+            $contentType,
             $level,
             $requireRead ? 1 : 0,
             $isVisible ? 1 : 0,
@@ -66,10 +72,15 @@ class Announcement {
     /**
      * 更新公告
      */
-    public function updateAnnouncement($announcementId, $title, $content, $level, $requireRead, $isVisible) {
+    public function updateAnnouncement($announcementId, $title, $content, $level, $requireRead, $isVisible, $contentType = 'auto') {
         // 验证级别
         if (!in_array($level, ['important', 'normal', 'notice'])) {
             $level = 'normal';
+        }
+        
+        // 验证内容类型
+        if (!in_array($contentType, ['plain', 'html', 'markdown', 'auto'])) {
+            $contentType = 'auto';
         }
         
         // 获取原公告信息
@@ -82,10 +93,11 @@ class Announcement {
             return ['success' => false, 'message' => '公告不存在'];
         }
         
-        $sql = "UPDATE announcements SET title = ?, content = ?, level = ?, require_read = ?, is_visible = ? WHERE id = ?";
+        $sql = "UPDATE announcements SET title = ?, content = ?, content_type = ?, level = ?, require_read = ?, is_visible = ? WHERE id = ?";
         $this->db->execute($sql, [
             $title,
             $content,
+            $contentType,
             $level,
             $requireRead ? 1 : 0,
             $isVisible ? 1 : 0,

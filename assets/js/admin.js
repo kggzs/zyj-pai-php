@@ -2715,12 +2715,22 @@ function renderAnnouncements(data) {
                         <button class="btn" onclick="deleteAnnouncement(${announcement.id})" style="padding: 4px 12px; font-size: 12px; background: #dc3545;">删除</button>
                     </div>
                 </div>
-                <div style="color: #666; line-height: 1.6; white-space: pre-wrap; word-break: break-word;">${announcement.content}</div>
+                <div class="admin-announcement-content" style="color: #666; line-height: 1.6; word-break: break-word;" data-content-type="${announcement.content_type || 'auto'}"></div>
             </div>
         `;
     }).join('');
     
     document.getElementById('announcementList').innerHTML = html;
+    
+    // 渲染内容（支持HTML和Markdown）
+    document.querySelectorAll('.admin-announcement-content').forEach(async (el, index) => {
+        const announcement = list[index];
+        if (announcement && announcement.content) {
+            const content = announcement.content;
+            const contentType = announcement.content_type || 'auto';
+            el.innerHTML = await renderContent(content, contentType);
+        }
+    });
     
     // 分页
     const totalPages = Math.ceil(total / page_size);
@@ -2745,9 +2755,11 @@ function showAnnouncementModal() {
     document.getElementById('announcementId').value = '';
     document.getElementById('announcementTitle').value = '';
     document.getElementById('announcementContent').value = '';
+    document.getElementById('announcementContentType').value = 'auto';
     document.getElementById('announcementLevel').value = 'normal';
     document.getElementById('announcementRequireRead').checked = false;
     document.getElementById('announcementIsVisible').checked = true;
+    updateContentTypeHint();
     document.getElementById('announcementModal').style.display = 'block';
 }
 
@@ -2762,7 +2774,9 @@ function editAnnouncement(id) {
                 document.getElementById('announcementId').value = announcement.id;
                 document.getElementById('announcementTitle').value = announcement.title;
                 document.getElementById('announcementContent').value = announcement.content;
+                document.getElementById('announcementContentType').value = announcement.content_type || 'auto';
                 document.getElementById('announcementLevel').value = announcement.level;
+                updateContentTypeHint();
                 document.getElementById('announcementRequireRead').checked = announcement.require_read == 1;
                 document.getElementById('announcementIsVisible').checked = announcement.is_visible == 1;
                 document.getElementById('announcementModal').style.display = 'block';
@@ -2782,10 +2796,26 @@ function closeAnnouncementModal() {
 }
 
 // 提交公告
+// 更新内容类型提示
+function updateContentTypeHint() {
+    const type = document.getElementById('announcementContentType').value;
+    const hint = document.getElementById('contentTypeHint');
+    const hints = {
+        'plain': '纯文本格式，换行将被保留',
+        'html': 'HTML格式，支持HTML标签',
+        'markdown': 'Markdown格式，支持Markdown语法',
+        'auto': '系统将自动检测内容格式'
+    };
+    if (hint) {
+        hint.textContent = hints[type] || hints['auto'];
+    }
+}
+
 function submitAnnouncement() {
     const id = document.getElementById('announcementId').value;
     const title = document.getElementById('announcementTitle').value.trim();
     const content = document.getElementById('announcementContent').value.trim();
+    const contentType = document.getElementById('announcementContentType').value;
     const level = document.getElementById('announcementLevel').value;
     const requireRead = document.getElementById('announcementRequireRead').checked;
     const isVisible = document.getElementById('announcementIsVisible').checked;
@@ -2799,6 +2829,7 @@ function submitAnnouncement() {
     if (id) formData.append('id', id);
     formData.append('title', title);
     formData.append('content', content);
+    formData.append('content_type', contentType);
     formData.append('level', level);
     formData.append('require_read', requireRead ? '1' : '0');
     formData.append('is_visible', isVisible ? '1' : '0');
@@ -3010,7 +3041,7 @@ function displayShopProducts(data) {
                     <div style="font-size: 12px; color: #999;">
                         ${stockInfo} | 已售：${product.sold_count} | 排序：${product.sort_order}
                     </div>
-                    ${product.description ? `<div style="font-size: 12px; color: #666; margin-top: 5px;">${product.description}</div>` : ''}
+                    ${product.description ? `<div class="admin-shop-product-description" style="font-size: 12px; color: #666; margin-top: 5px;" data-content-type="${product.description_type || 'auto'}"></div>` : ''}
                 </div>
                 <div style="display: flex; gap: 10px;">
                     <button class="btn btn-sm" onclick="editShopProduct(${product.id})">编辑</button>
@@ -3025,6 +3056,30 @@ function displayShopProducts(data) {
     }).join('');
     
     document.getElementById('shopProductList').innerHTML = html;
+    
+    // 渲染商品描述（支持HTML和Markdown）
+    document.querySelectorAll('.admin-shop-product-description').forEach(async (el) => {
+        // 通过父元素找到商品ID
+        const dataRow = el.closest('.data-row');
+        if (!dataRow) return;
+        
+        // 从按钮的onclick中提取商品ID
+        const editBtn = dataRow.querySelector('button[onclick*="editShopProduct"]');
+        if (!editBtn) return;
+        
+        const onclickAttr = editBtn.getAttribute('onclick');
+        const match = onclickAttr.match(/editShopProduct\((\d+)\)/);
+        if (!match) return;
+        
+        const productId = parseInt(match[1]);
+        const product = list.find(p => p.id == productId);
+        
+        if (product && product.description) {
+            const content = product.description;
+            const contentType = product.description_type || 'auto';
+            el.innerHTML = await renderContent(content, contentType);
+        }
+    });
     
     // 分页
     const totalPages = Math.ceil(total / page_size);
@@ -3092,6 +3147,15 @@ function createShopProductModal() {
                     <div style="margin-bottom: 15px;">
                         <label>商品名称 *</label>
                         <input type="text" id="shopProductName" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <label>描述类型</label>
+                        <select id="shopProductDescriptionType" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 5px;">
+                            <option value="plain">纯文本</option>
+                            <option value="html">HTML</option>
+                            <option value="markdown">Markdown</option>
+                            <option value="auto" selected>自动检测</option>
+                        </select>
                     </div>
                     <div style="margin-bottom: 15px;">
                         <label>商品描述</label>
@@ -3174,6 +3238,7 @@ function fillShopProductForm(product) {
     document.getElementById('shopProductId').value = product.id;
     document.getElementById('shopProductName').value = product.name;
     document.getElementById('shopProductDescription').value = product.description || '';
+    document.getElementById('shopProductDescriptionType').value = product.description_type || 'auto';
     document.getElementById('shopProductType').value = product.type;
     document.getElementById('shopProductPointsPrice').value = product.points_price;
     document.getElementById('shopProductValue').value = product.value || '';
@@ -3192,6 +3257,7 @@ function saveShopProduct(event) {
     const data = {
         name: document.getElementById('shopProductName').value,
         description: document.getElementById('shopProductDescription').value,
+        description_type: document.getElementById('shopProductDescriptionType').value,
         type: document.getElementById('shopProductType').value,
         points_price: parseInt(document.getElementById('shopProductPointsPrice').value),
         value: document.getElementById('shopProductValue').value || null,

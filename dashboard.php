@@ -434,6 +434,7 @@ $photoCount = $db->fetchOne("SELECT COUNT(*) as total FROM photos WHERE user_id 
         // 传递VIP状态到前端
         window.userIsVip = <?php echo $isVip ? 'true' : 'false'; ?>;
     </script>
+    <script src="assets/js/content-renderer.js"></script>
     <script src="assets/js/dashboard.js?v=<?php echo time(); ?>"></script>
 </body>
 </html>

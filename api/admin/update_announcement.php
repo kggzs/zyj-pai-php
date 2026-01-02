@@ -18,6 +18,7 @@ try {
     $id = $_POST['id'] ?? 0;
     $title = $_POST['title'] ?? '';
     $content = $_POST['content'] ?? '';
+    $contentType = $_POST['content_type'] ?? 'auto';
     $level = $_POST['level'] ?? 'normal';
     $requireRead = isset($_POST['require_read']) && $_POST['require_read'] == '1';
     $isVisible = isset($_POST['is_visible']) ? ($_POST['is_visible'] == '1') : true;
@@ -34,7 +35,8 @@ try {
         $content,
         $level,
         $requireRead,
-        $isVisible
+        $isVisible,
+        $contentType
     );
     
     echo json_encode($result);

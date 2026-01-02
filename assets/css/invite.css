@@ -1,0 +1,94 @@
+@import url('common.css');
+
+body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+}
+
+.container {
+    width: 100%;
+    max-width: 500px;
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+}
+
+#video {
+    width: 100%;
+    border-radius: 15px;
+    background: #000;
+    display: none;
+}
+
+#canvas {
+    display: none;
+}
+
+#preview {
+    width: 100%;
+    border-radius: 15px;
+    display: none;
+}
+
+#result {
+    width: 100%;
+    border-radius: 15px;
+    display: none;
+    margin-top: 20px;
+}
+
+.btn {
+    width: 100%;
+    margin: 10px 0;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.btn-success {
+    background: #28a745;
+    color: white;
+}
+
+.btn-danger {
+    background: #dc3545;
+    color: white;
+}
+
+.loading {
+    text-align: center;
+    padding: 20px;
+    display: none;
+}
+
+.register-link {
+    margin-top: 30px;
+    text-align: center;
+    display: none;
+}
+
+.register-link a {
+    color: white;
+    text-decoration: none;
+    padding: 10px 20px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 20px;
+    display: inline-block;
+}
+
+.register-btn {
+    display: none;
+}
+

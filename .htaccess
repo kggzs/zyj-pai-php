@@ -1,0 +1,42 @@
+RewriteEngine On
+
+# 禁止直接访问敏感目录
+RewriteRule ^(config|core|database|uploads)/ - [F,L]
+
+# API路由
+RewriteRule ^api/(.*)$ api/$1 [L]
+
+# 图片访问
+RewriteRule ^uploads/(.*)$ uploads/$1 [L]
+
+# 隐藏服务器信息
+<IfModule mod_headers.c>
+    # 移除X-Powered-By头（PHP版本信息）
+    Header unset X-Powered-By
+    # 隐藏Server头（如果可能的话，通常在服务器级别配置）
+    Header always unset Server
+    # 隐藏X-AspNet-Version头（如果存在）
+    Header unset X-AspNet-Version
+    # 隐藏X-AspNetMvc-Version头（如果存在）
+    Header unset X-AspNetMvc-Version
+    # 隐藏宝塔面板相关HTTP头
+    Header unset http_Path
+    Header unset http_bt_config
+</IfModule>
+
+# 隐藏PHP版本信息（如果mod_headers不可用，在PHP中处理）
+<IfModule mod_php7.c>
+    php_flag expose_php Off
+</IfModule>
+<IfModule mod_php8.c>
+    php_flag expose_php Off
+</IfModule>
+
+# 禁用目录浏览
+Options -Indexes
+
+# 禁止访问隐藏文件（以.开头的文件）
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>

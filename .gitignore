@@ -1,0 +1,39 @@
+# 上传文件
+uploads/original/*
+uploads/result/*
+!uploads/original/.gitkeep
+!uploads/result/.gitkeep
+
+# 配置文件（包含敏感信息）
+config/database.php
+
+# Haar级联分类器文件（可以通过脚本下载）
+scripts/*.xml
+
+# IDE配置
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 日志文件
+*.log
+logs/
+
+# 数据库备份
+backups/
+*.sql
+!database/*.sql
+
+# 图片缓存
+cache/images/
+
+# 系统缓存（保留cache目录结构）
+cache/*.cache
+cache/*/
+!cache/images/

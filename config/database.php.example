@@ -1,0 +1,17 @@
+<?php
+/**
+ * 数据库配置文件示例
+ * 复制此文件为 database.php 并修改相应的配置信息
+ */
+return [
+    'host' => 'localhost',
+    'dbname' => 'xiaochuo',
+    'username' => 'root',
+    'password' => 'your_password_here',
+    'charset' => 'utf8mb4',
+    'options' => [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::ATTR_EMULATE_PREPARES => false,
+    ]
+];

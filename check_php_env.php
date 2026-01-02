@@ -20,7 +20,7 @@ header('Content-Type: text/html; charset=utf-8');
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #87CEEB 0%, #5B9BD5 100%);
             padding: 20px;
             min-height: 100vh;
         }
@@ -33,7 +33,7 @@ header('Content-Type: text/html; charset=utf-8');
             overflow: hidden;
         }
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #87CEEB 0%, #5B9BD5 100%);
             color: white;
             padding: 30px;
             text-align: center;
@@ -57,7 +57,7 @@ header('Content-Type: text/html; charset=utf-8');
             font-weight: 600;
             margin-bottom: 15px;
             color: #333;
-            border-bottom: 2px solid #667eea;
+            border-bottom: 2px solid #5B9BD5;
             padding-bottom: 8px;
         }
         .check-item {

@@ -263,7 +263,7 @@ function loadStatistics() {
                         const count = stats.browser_stats[browser] || 0;
                         if (count > 0) {
                             const percentage = calculatePercentage(count, totalPhotos);
-                            const color = browserColors[browser] || '#667eea';
+                            const color = browserColors[browser] || '#5B9BD5';
                             const icon = browserIcons[browser] || '🌐';
                             browserHtml += `
                                 <div class="browser-stat-item">
@@ -367,7 +367,7 @@ function loadUsers(page = 1) {
                             <td style="width: 120px; white-space: nowrap;">${escapeHtml(user.register_ip || '未知')}</td>
                             <td style="width: 160px; white-space: nowrap;">${user.register_time ? escapeHtml(user.register_time.replace(/:\d{2}$/, '')) : '未知'}</td>
                             <td style="width: 160px; white-space: nowrap;">${user.last_login_time ? escapeHtml(user.last_login_time.replace(/:\d{2}$/, '')) : '从未登录'}</td>
-                            <td style="width: 80px; text-align: center; font-weight: bold; color: #667eea;">${user.points || 0}</td>
+                            <td style="width: 80px; text-align: center; font-weight: bold; color: #5B9BD5;">${user.points || 0}</td>
                             <td style="width: 100px; text-align: center;">${vipBadge}</td>
                             <td style="width: 100px; text-align: center;">${statusBadge}</td>
                             <td style="width: 280px; white-space: nowrap;">
@@ -470,7 +470,7 @@ function showUserDetail(userId) {
                         }</div>
                         <div class="detail-item">
                             <strong>注册码：</strong>
-                            <span style="font-family: monospace; font-weight: bold; color: #667eea;" title="注册码（6位）">${escapeHtml(user.register_code || '未生成')}</span>
+                            <span style="font-family: monospace; font-weight: bold; color: #5B9BD5;" title="注册码（6位）">${escapeHtml(user.register_code || '未生成')}</span>
                         </div>
                     </div>
                     
@@ -781,7 +781,7 @@ function generateAdminExifInfo(photo) {
     }
     
     exifHtml += '<div class="info-row" style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #eee;">';
-    exifHtml += '<span class="info-label" style="color: #667eea; font-weight: 600;">📷 拍摄信息:</span>';
+    exifHtml += '<span class="info-label" style="color: #5B9BD5; font-weight: 600;">📷 拍摄信息:</span>';
     exifHtml += '<div style="margin-top: 6px; font-size: 11px; color: #666;">';
     
     // 地理位置
@@ -790,7 +790,7 @@ function generateAdminExifInfo(photo) {
         if (photo.altitude) {
             exifHtml += ` (海拔: ${photo.altitude}m)`;
         }
-        exifHtml += ` <a href="https://www.openstreetmap.org/?mlat=${photo.latitude}&mlon=${photo.longitude}&zoom=15" target="_blank" style="color: #667eea; text-decoration: none; margin-left: 4px;">地图</a>`;
+        exifHtml += ` <a href="https://www.openstreetmap.org/?mlat=${photo.latitude}&mlon=${photo.longitude}&zoom=15" target="_blank" style="color: #5B9BD5; text-decoration: none; margin-left: 4px;">地图</a>`;
         exifHtml += '</div>';
         if (photo.location_address) {
             exifHtml += `<div style="margin-bottom: 4px; color: #999;">${photo.location_address}</div>`;
@@ -903,7 +903,7 @@ function loadPhotos(page = 1) {
                             <div class="photo-info">
                                 <div class="info-row">
                                     <span class="info-label">拍摄链接码:</span> 
-                                    ${inviteLabel ? `<span style="margin-right: 6px; padding: 2px 6px; background: #667eea; color: white; border-radius: 3px; font-size: 11px;">${inviteLabel}</span>` : ''}
+                                    ${inviteLabel ? `<span style="margin-right: 6px; padding: 2px 6px; background: #5B9BD5; color: white; border-radius: 3px; font-size: 11px;">${inviteLabel}</span>` : ''}
                                     <span style="font-family: monospace;" title="拍摄链接码（8位）">${inviteCode}</span>
                                 </div>
                                 <div class="info-row">
@@ -1043,46 +1043,46 @@ function displayPhotoDetail(photo) {
                     
                     <table class="info-table" style="width: 100%; border-collapse: collapse;">
                         <tr>
-                            <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: 600; width: 120px; color: #667eea;">照片ID</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: 600; width: 120px; color: #5B9BD5;">照片ID</td>
                             <td style="padding: 8px; border-bottom: 1px solid #eee;">${photoId}</td>
                         </tr>
                         <tr>
-                            <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: 600; color: #667eea;">用户</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: 600; color: #5B9BD5;">用户</td>
                             <td style="padding: 8px; border-bottom: 1px solid #eee;">${userName}${deletedBadge}</td>
                         </tr>
                         <tr>
-                            <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: 600; color: #667eea;">文件类型</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: 600; color: #5B9BD5;">文件类型</td>
                             <td style="padding: 8px; border-bottom: 1px solid #eee;">${isVideo ? '🎥 录像' : '📷 照片'}</td>
                         </tr>
                         <tr>
-                            <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: 600; color: #667eea;">拍摄链接码</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: 600; color: #5B9BD5;">拍摄链接码</td>
                             <td style="padding: 8px; border-bottom: 1px solid #eee;">
-                                ${inviteLabel ? `<span style="margin-right: 6px; padding: 2px 6px; background: #667eea; color: white; border-radius: 3px; font-size: 11px;">${inviteLabel}</span>` : ''}
+                                ${inviteLabel ? `<span style="margin-right: 6px; padding: 2px 6px; background: #5B9BD5; color: white; border-radius: 3px; font-size: 11px;">${inviteLabel}</span>` : ''}
                                 <span style="font-family: monospace;">${inviteCode}</span>
                             </td>
                         </tr>
                         <tr>
-                            <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: 600; color: #667eea;">上传时间</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: 600; color: #5B9BD5;">上传时间</td>
                             <td style="padding: 8px; border-bottom: 1px solid #eee;">${formatTime}</td>
                         </tr>
                         <tr>
-                            <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: 600; color: #667eea;">上传IP</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: 600; color: #5B9BD5;">上传IP</td>
                             <td style="padding: 8px; border-bottom: 1px solid #eee; font-family: monospace;">${uploadIp}</td>
                         </tr>
                         <tr>
-                            <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: 600; color: #667eea;">浏览器</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: 600; color: #5B9BD5;">浏览器</td>
                             <td style="padding: 8px; border-bottom: 1px solid #eee;" title="${uploadUa}">${browserInfo}</td>
                         </tr>
                         <tr>
-                            <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: 600; color: #667eea;">设备信息</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: 600; color: #5B9BD5;">设备信息</td>
                             <td style="padding: 8px; border-bottom: 1px solid #eee;" title="${uploadUa}">${deviceInfo}</td>
                         </tr>
                         <tr>
-                            <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: 600; color: #667eea;">User-Agent</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: 600; color: #5B9BD5;">User-Agent</td>
                             <td style="padding: 8px; border-bottom: 1px solid #eee; font-size: 11px; color: #666; word-break: break-all;">${uploadUa || '未知'}</td>
                         </tr>
                         <tr>
-                            <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: 600; color: #667eea;">标签</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: 600; color: #5B9BD5;">标签</td>
                             <td style="padding: 8px; border-bottom: 1px solid #eee;">
                                 ${tags.length > 0 ? 
                                     tags.map(tag => `<span class="photo-tag-admin" style="margin-right: 6px;">${tag.name}</span>`).join('') : 
@@ -1115,24 +1115,24 @@ function generateFullExifInfo(photo) {
                     photo.flash || photo.orientation || photo.location_address;
     
     if (!hasExif) {
-        return '<tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: 600; color: #667eea;">EXIF信息</td><td style="padding: 8px; border-bottom: 1px solid #eee; color: #999;">无EXIF数据</td></tr>';
+        return '<tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: 600; color: #5B9BD5;">EXIF信息</td><td style="padding: 8px; border-bottom: 1px solid #eee; color: #999;">无EXIF数据</td></tr>';
     }
     
-    exifHtml += '<tr><td colspan="2" style="padding: 12px 8px; border-bottom: 1px solid #eee; background: #f8f9fa;"><strong style="color: #667eea;">📷 拍摄信息</strong></td></tr>';
+    exifHtml += '<tr><td colspan="2" style="padding: 12px 8px; border-bottom: 1px solid #eee; background: #f8f9fa;"><strong style="color: #5B9BD5;">📷 拍摄信息</strong></td></tr>';
     
     // 地理位置
     if (photo.latitude && photo.longitude) {
         exifHtml += `<tr>
-            <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: 600; color: #667eea;">📍 位置坐标</td>
+            <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: 600; color: #5B9BD5;">📍 位置坐标</td>
             <td style="padding: 8px; border-bottom: 1px solid #eee;">
                 ${photo.latitude.toFixed(6)}, ${photo.longitude.toFixed(6)}
                 ${photo.altitude ? ` (海拔: ${photo.altitude}m)` : ''}
-                <a href="https://www.openstreetmap.org/?mlat=${photo.latitude}&mlon=${photo.longitude}&zoom=15" target="_blank" style="color: #667eea; text-decoration: none; margin-left: 8px;">查看地图</a>
+                <a href="https://www.openstreetmap.org/?mlat=${photo.latitude}&mlon=${photo.longitude}&zoom=15" target="_blank" style="color: #5B9BD5; text-decoration: none; margin-left: 8px;">查看地图</a>
             </td>
         </tr>`;
         if (photo.location_address) {
             exifHtml += `<tr>
-                <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: 600; color: #667eea;">📍 地址</td>
+                <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: 600; color: #5B9BD5;">📍 地址</td>
                 <td style="padding: 8px; border-bottom: 1px solid #eee;">${photo.location_address}</td>
             </tr>`;
         }
@@ -1144,12 +1144,12 @@ function generateFullExifInfo(photo) {
         if (photo.camera_make) cameraInfo.push(photo.camera_make);
         if (photo.camera_model) cameraInfo.push(photo.camera_model);
         exifHtml += `<tr>
-            <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: 600; color: #667eea;">📷 相机</td>
+            <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: 600; color: #5B9BD5;">📷 相机</td>
             <td style="padding: 8px; border-bottom: 1px solid #eee;">${cameraInfo.join(' ')}</td>
         </tr>`;
         if (photo.lens_model) {
             exifHtml += `<tr>
-                <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: 600; color: #667eea;">🔍 镜头</td>
+                <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: 600; color: #5B9BD5;">🔍 镜头</td>
                 <td style="padding: 8px; border-bottom: 1px solid #eee;">${photo.lens_model}</td>
             </tr>`;
         }
@@ -1157,7 +1157,7 @@ function generateFullExifInfo(photo) {
     
     // 拍摄参数
     if (photo.focal_length || photo.aperture || photo.shutter_speed || photo.iso) {
-        exifHtml += '<tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: 600; color: #667eea;">⚙️ 拍摄参数</td><td style="padding: 8px; border-bottom: 1px solid #eee;">';
+        exifHtml += '<tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: 600; color: #5B9BD5;">⚙️ 拍摄参数</td><td style="padding: 8px; border-bottom: 1px solid #eee;">';
         const params = [];
         if (photo.focal_length) params.push(`焦距: ${photo.focal_length}`);
         if (photo.aperture) params.push(`光圈: ${photo.aperture}`);
@@ -1168,7 +1168,7 @@ function generateFullExifInfo(photo) {
     
     // 其他参数
     if (photo.exposure_mode || photo.white_balance || photo.flash) {
-        exifHtml += '<tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: 600; color: #667eea;">其他参数</td><td style="padding: 8px; border-bottom: 1px solid #eee;">';
+        exifHtml += '<tr><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: 600; color: #5B9BD5;">其他参数</td><td style="padding: 8px; border-bottom: 1px solid #eee;">';
         const otherParams = [];
         if (photo.exposure_mode) otherParams.push(`曝光模式: ${photo.exposure_mode}`);
         if (photo.white_balance) otherParams.push(`白平衡: ${photo.white_balance}`);
@@ -1179,7 +1179,7 @@ function generateFullExifInfo(photo) {
     // 照片尺寸
     if (photo.width && photo.height) {
         exifHtml += `<tr>
-            <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: 600; color: #667eea;">📐 尺寸</td>
+            <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: 600; color: #5B9BD5;">📐 尺寸</td>
             <td style="padding: 8px; border-bottom: 1px solid #eee;">${photo.width} × ${photo.height} 像素</td>
         </tr>`;
     }
@@ -1187,7 +1187,7 @@ function generateFullExifInfo(photo) {
     // 方向
     if (photo.orientation) {
         exifHtml += `<tr>
-            <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: 600; color: #667eea;">方向</td>
+            <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: 600; color: #5B9BD5;">方向</td>
             <td style="padding: 8px; border-bottom: 1px solid #eee;">${photo.orientation}</td>
         </tr>`;
     }
@@ -1364,11 +1364,11 @@ function loadSettings() {
                             
                             // 获取邮件模板配置
                             const emailTemplateVerificationSubject = systemConfigs['email_template_verification_subject'] || '邮箱验证码';
-                            const emailTemplateVerificationBody = systemConfigs['email_template_verification_body'] || '<html>\n<head>\n    <meta charset="utf-8">\n</head>\n<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">\n    <div style="max-width: 600px; margin: 0 auto; padding: 20px;">\n        <h2 style="color: #667eea;">邮箱验证码</h2>\n        <p>您的验证码是：</p>\n        <div style="background: #f0f4ff; padding: 20px; text-align: center; font-size: 32px; font-weight: bold; color: #667eea; letter-spacing: 5px; margin: 20px 0; border-radius: 8px;">\n            {code}\n        </div>\n        <p style="color: #999; font-size: 12px;">验证码有效期为10分钟，请勿泄露给他人。</p>\n    </div>\n</body>\n</html>';
+                            const emailTemplateVerificationBody = systemConfigs['email_template_verification_body'] || '<html>\n<head>\n    <meta charset="utf-8">\n</head>\n<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">\n    <div style="max-width: 600px; margin: 0 auto; padding: 20px;">\n        <h2 style="color: #5B9BD5;">邮箱验证码</h2>\n        <p>您的验证码是：</p>\n        <div style="background: #f0f4ff; padding: 20px; text-align: center; font-size: 32px; font-weight: bold; color: #5B9BD5; letter-spacing: 5px; margin: 20px 0; border-radius: 8px;">\n            {code}\n        </div>\n        <p style="color: #999; font-size: 12px;">验证码有效期为10分钟，请勿泄露给他人。</p>\n    </div>\n</body>\n</html>';
                             const emailTemplateResetSubject = systemConfigs['email_template_reset_subject'] || '密码重置';
-                            const emailTemplateResetBody = systemConfigs['email_template_reset_body'] || '<html>\n<head>\n    <meta charset="utf-8">\n</head>\n<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">\n    <div style="max-width: 600px; margin: 0 auto; padding: 20px;">\n        <h2 style="color: #667eea;">密码重置</h2>\n        <p>您申请了密码重置，请点击下面的链接重置密码：</p>\n        <div style="text-align: center; margin: 30px 0;">\n            <a href="{resetUrl}" style="display: inline-block; padding: 12px 30px; background: #667eea; color: white; text-decoration: none; border-radius: 6px;">重置密码</a>\n        </div>\n        <p style="color: #999; font-size: 12px;">如果无法点击链接，请复制以下地址到浏览器：</p>\n        <p style="color: #999; font-size: 12px; word-break: break-all;">{resetUrl}</p>\n        <p style="color: #999; font-size: 12px;">链接有效期为1小时，请勿泄露给他人。</p>\n    </div>\n</body>\n</html>';
+                            const emailTemplateResetBody = systemConfigs['email_template_reset_body'] || '<html>\n<head>\n    <meta charset="utf-8">\n</head>\n<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">\n    <div style="max-width: 600px; margin: 0 auto; padding: 20px;">\n        <h2 style="color: #5B9BD5;">密码重置</h2>\n        <p>您申请了密码重置，请点击下面的链接重置密码：</p>\n        <div style="text-align: center; margin: 30px 0;">\n            <a href="{resetUrl}" style="display: inline-block; padding: 12px 30px; background: #5B9BD5; color: white; text-decoration: none; border-radius: 6px;">重置密码</a>\n        </div>\n        <p style="color: #999; font-size: 12px;">如果无法点击链接，请复制以下地址到浏览器：</p>\n        <p style="color: #999; font-size: 12px; word-break: break-all;">{resetUrl}</p>\n        <p style="color: #999; font-size: 12px;">链接有效期为1小时，请勿泄露给他人。</p>\n    </div>\n</body>\n</html>';
                             const emailTemplatePhotoSubject = systemConfigs['email_template_photo_subject'] || '您收到了新照片';
-                            const emailTemplatePhotoBody = systemConfigs['email_template_photo_body'] || '<html>\n<head>\n    <meta charset="utf-8">\n</head>\n<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">\n    <div style="max-width: 600px; margin: 0 auto; padding: 20px;">\n        <h2 style="color: #667eea;">您收到了新照片</h2>\n        <p>亲爱的 {username}，</p>\n        <p>您收到了 <strong>{photoCount}</strong> 张新照片，请登录查看。</p>\n        <div style="text-align: center; margin: 30px 0;">\n            <a href="{siteUrl}/dashboard.php" style="display: inline-block; padding: 12px 30px; background: #667eea; color: white; text-decoration: none; border-radius: 6px;">查看照片</a>\n        </div>\n    </div>\n</body>\n</html>';
+                            const emailTemplatePhotoBody = systemConfigs['email_template_photo_body'] || '<html>\n<head>\n    <meta charset="utf-8">\n</head>\n<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">\n    <div style="max-width: 600px; margin: 0 auto; padding: 20px;">\n        <h2 style="color: #5B9BD5;">您收到了新照片</h2>\n        <p>亲爱的 {username}，</p>\n        <p>您收到了 <strong>{photoCount}</strong> 张新照片，请登录查看。</p>\n        <div style="text-align: center; margin: 30px 0;">\n            <a href="{siteUrl}/dashboard.php" style="display: inline-block; padding: 12px 30px; background: #5B9BD5; color: white; text-decoration: none; border-radius: 6px;">查看照片</a>\n        </div>\n    </div>\n</body>\n</html>';
                             
                             let html = `
                                 <div class="settings-tabs">
@@ -2053,7 +2053,7 @@ function loadLoginLogs(page = 1) {
                             <tr>
                                 <td style="width: 160px; white-space: nowrap;">${escapeHtml(formatTime)}</td>
                                 <td style="min-width: 150px;">
-                                    ${log.user_id ? `<a href="javascript:void(0)" onclick="showUserDetail(${log.user_id})" style="color: #667eea;">${escapeHtml(displayName)}</a> (ID: ${log.user_id})` : '未登录'}
+                                    ${log.user_id ? `<a href="javascript:void(0)" onclick="showUserDetail(${log.user_id})" style="color: #5B9BD5;">${escapeHtml(displayName)}</a> (ID: ${log.user_id})` : '未登录'}
                                 </td>
                                 <td style="width: 120px; white-space: nowrap;">${escapeHtml(log.login_ip || '未知')}</td>
                                 <td style="width: 80px; text-align: center;">${statusBadge}</td>
@@ -2145,7 +2145,7 @@ function loadPointsLogs(page = 1) {
                             <tr>
                                 <td style="width: 160px; white-space: nowrap;">${escapeHtml(formatTime)}</td>
                                 <td style="min-width: 150px;">
-                                    <a href="javascript:void(0)" onclick="showUserDetail(${log.user_id})" style="color: #667eea;">${escapeHtml(displayName)}</a> (ID: ${log.user_id})
+                                    <a href="javascript:void(0)" onclick="showUserDetail(${log.user_id})" style="color: #5B9BD5;">${escapeHtml(displayName)}</a> (ID: ${log.user_id})
                                 </td>
                                 <td style="width: 120px;">${escapeHtml(typeName)}</td>
                                 <td style="width: 100px; text-align: center; ${pointsClass}">${pointsText}</td>
@@ -2216,7 +2216,7 @@ function loadPhotoLogs(page = 1) {
                             <tr>
                                 <td style="width: 160px; white-space: nowrap;">${escapeHtml(formatTime)}</td>
                                 <td style="min-width: 150px;">
-                                    <a href="javascript:void(0)" onclick="showUserDetail(${log.user_id})" style="color: #667eea;">${escapeHtml(displayName)}</a> (ID: ${log.user_id})
+                                    <a href="javascript:void(0)" onclick="showUserDetail(${log.user_id})" style="color: #5B9BD5;">${escapeHtml(displayName)}</a> (ID: ${log.user_id})
                                 </td>
                                 <td style="width: 120px; font-family: monospace;" title="${log.invite_code ? (log.invite_code.length === 6 ? '注册码（6位）' : log.invite_code.length === 8 ? '拍摄链接码（8位）' : '') : ''}">${escapeHtml(log.invite_code || '未知')}</td>
                                 <td style="width: 120px; white-space: nowrap;">${escapeHtml(log.upload_ip || '未知')}</td>
@@ -2563,7 +2563,7 @@ function loadAbnormalLogs(page = 1) {
                             <tr>
                                 <td style="width: 160px; white-space: nowrap;">${escapeHtml(formatTime)}</td>
                                 <td style="min-width: 120px;">
-                                    ${log.user_id ? `<a href="javascript:void(0)" onclick="showUserDetail(${log.user_id})" style="color: #667eea;">${escapeHtml(displayName)}</a> (ID: ${log.user_id})` : '未登录'}
+                                    ${log.user_id ? `<a href="javascript:void(0)" onclick="showUserDetail(${log.user_id})" style="color: #5B9BD5;">${escapeHtml(displayName)}</a> (ID: ${log.user_id})` : '未登录'}
                                 </td>
                                 <td style="width: 120px;">${escapeHtml(behaviorTypeName)}</td>
                                 <td style="width: 80px; text-align: center; color: ${severityColor}; font-weight: bold;">${escapeHtml(severityName)}</td>

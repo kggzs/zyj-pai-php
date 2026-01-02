@@ -5,7 +5,7 @@ body {
 }
 
 .header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #87CEEB 0%, #5B9BD5 100%);
     color: white;
     padding: 40px 20px;
     box-shadow: 0 4px 20px rgba(0,0,0,0.1);
@@ -756,7 +756,7 @@ body {
 }
 
 .nav-btn.active {
-    background: #667eea;
+    background: #5B9BD5;
     color: white;
 }
 
@@ -789,7 +789,7 @@ body {
 }
 
 .btn {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #87CEEB 0%, #5B9BD5 100%);
     color: white;
     margin: 10px 0;
     padding: 12px 24px;
@@ -962,7 +962,7 @@ body {
     align-items: center;
     justify-content: center;
     padding: 3px 8px;
-    background: #667eea;
+    background: #5B9BD5;
     color: white;
     text-decoration: none;
     border-radius: 3px;
@@ -973,7 +973,7 @@ body {
 }
 
 #photoList .photo-actions a:hover {
-    background: #5568d3;
+    background: #4A8BC2;
 }
 
 #photoList .photo-actions a.delete-btn {
@@ -1013,7 +1013,7 @@ body {
 .expand-icon {
     transition: transform 0.3s;
     font-size: 14px;
-    color: #667eea;
+    color: #5B9BD5;
     font-weight: bold;
     min-width: 20px;
     text-align: center;
@@ -1072,7 +1072,7 @@ body {
 .photo-tag {
     display: inline-block;
     padding: 2px 6px;
-    background: #667eea;
+    background: #5B9BD5;
     color: white;
     border-radius: 3px;
     font-size: 8px;
@@ -1081,7 +1081,7 @@ body {
 }
 
 .photo-tag:hover {
-    background: #5568d3;
+    background: #4A8BC2;
 }
 
 #photoList .photo-actions a.tag-btn {
@@ -1107,7 +1107,7 @@ body {
     max-width: 16px !important;
     max-height: 16px !important;
     cursor: pointer;
-    accent-color: #667eea;
+    accent-color: #5B9BD5;
     margin: 0;
     padding: 0;
     flex-shrink: 0;
@@ -1136,7 +1136,7 @@ body {
     max-width: 14px;
     max-height: 14px;
     cursor: pointer;
-    accent-color: #667eea;
+    accent-color: #5B9BD5;
     margin: 0;
     padding: 0;
 }
@@ -1192,13 +1192,13 @@ body {
 }
 
 .photo-tab-btn:hover {
-    color: #667eea;
+    color: #5B9BD5;
     background: #f0f4ff;
 }
 
 .photo-tab-btn.active {
-    color: #667eea;
-    border-bottom-color: #667eea;
+    color: #5B9BD5;
+    border-bottom-color: #5B9BD5;
     font-weight: bold;
 }
 
@@ -1250,19 +1250,19 @@ body {
     align-items: center;
     gap: 8px;
     padding: 12px 24px;
-    background: #667eea;
+    background: #5B9BD5;
     color: white;
     text-decoration: none;
     border-radius: 8px;
     font-size: 14px;
     font-weight: 500;
     transition: all 0.3s;
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 2px 8px rgba(91, 155, 213, 0.3);
 }
 
 .photo-download-btn:hover {
-    background: #5568d3;
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    background: #4A8BC2;
+    box-shadow: 0 4px 12px rgba(91, 155, 213, 0.4);
     transform: translateY(-2px);
 }
 
@@ -1283,7 +1283,7 @@ body {
     margin-bottom: 20px;
     color: #333;
     font-size: 18px;
-    border-bottom: 2px solid #667eea;
+    border-bottom: 2px solid #5B9BD5;
     padding-bottom: 12px;
     font-weight: 600;
 }
@@ -1296,7 +1296,7 @@ body {
 }
 
 .detail-info-item:hover {
-    background: rgba(102, 126, 234, 0.05);
+    background: rgba(91, 155, 213, 0.05);
     padding-left: 8px;
     padding-right: 8px;
     border-radius: 4px;
@@ -1451,9 +1451,9 @@ body {
 }
 
 .ranking-tab-btn.active {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #87CEEB 0%, #5B9BD5 100%);
     color: white;
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 2px 8px rgba(91, 155, 213, 0.3);
 }
 
 /* 排行榜标签按钮容器 */
@@ -1516,7 +1516,7 @@ body {
 }
 
 .points-log-card-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #87CEEB 0%, #5B9BD5 100%);
     padding: 15px;
     display: flex;
     justify-content: space-between;
@@ -1566,7 +1566,7 @@ body {
 
 .points-log-user {
     font-size: 13px;
-    color: #667eea;
+    color: #5B9BD5;
     font-weight: 500;
     padding: 4px 8px;
     background: #f0f4ff;
@@ -1734,7 +1734,7 @@ body {
 
 /* 无限制标签样式 */
 .invite-unlimited {
-    color: #667eea;
+    color: #5B9BD5;
     font-weight: bold;
     padding: 2px 8px;
     background: #f0f4ff;
@@ -1787,7 +1787,7 @@ body {
     
     /* 优化文本选择 */
     ::selection {
-        background: rgba(102, 126, 234, 0.3);
+        background: rgba(91, 155, 213, 0.3);
     }
 }
 

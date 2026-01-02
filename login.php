@@ -28,7 +28,7 @@ require_once __DIR__ . '/core/autoload.php';
         </form>
         
         <div class="forgot-password-link" style="text-align: center; margin-top: 15px;">
-            <a href="reset_password.php" style="color: #667eea; text-decoration: none; font-size: 14px;">忘记密码？</a>
+            <a href="reset_password.php" style="color: #5B9BD5; text-decoration: none; font-size: 14px;">忘记密码？</a>
         </div>
         
         <div class="register-link">

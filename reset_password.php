@@ -10,7 +10,7 @@ require_once __DIR__ . '/core/autoload.php';
     <link rel="stylesheet" href="assets/css/common.css">
     <style>
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #87CEEB 0%, #5B9BD5 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -50,7 +50,7 @@ require_once __DIR__ . '/core/autoload.php';
         .btn {
             width: 100%;
             padding: 12px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #87CEEB 0%, #5B9BD5 100%);
             color: white;
             border: none;
             border-radius: 6px;
@@ -92,7 +92,7 @@ require_once __DIR__ . '/core/autoload.php';
             margin-top: 20px;
         }
         .back-link a {
-            color: #667eea;
+            color: #5B9BD5;
             text-decoration: none;
         }
     </style>

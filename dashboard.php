@@ -148,7 +148,7 @@ $photoCount = $db->fetchOne("SELECT COUNT(*) as total FROM photos WHERE user_id 
                     <button class="btn" onclick="resetPhotoFilter()" style="background: #999; padding: 6px 15px; font-size: 13px;">重置</button>
                 </div>
                 <div id="batchActions" class="batch-actions" style="margin-bottom: 15px; padding: 10px; background: #f0f0f0; border-radius: 4px; gap: 10px; align-items: center;">
-                    <span id="selectedCount" style="font-weight: bold; color: #667eea;">已选择 0 张</span>
+                    <span id="selectedCount" style="font-weight: bold; color: #5B9BD5;">已选择 0 张</span>
                     <button class="btn" onclick="batchDeletePhotos()" style="background: #dc3545; padding: 6px 15px; font-size: 13px;">批量删除</button>
                     <button class="btn" onclick="batchDownloadPhotos()" style="background: #28a745; padding: 6px 15px; font-size: 13px;">批量下载</button>
                     <button class="btn" onclick="clearSelection()" style="background: #999; padding: 6px 15px; font-size: 13px;">取消选择</button>
@@ -159,7 +159,7 @@ $photoCount = $db->fetchOne("SELECT COUNT(*) as total FROM photos WHERE user_id 
             <!-- 积分商城 -->
             <div id="shop" class="section">
                 <h2>积分商城</h2>
-                <div style="margin-bottom: 20px; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; color: white;">
+                <div style="margin-bottom: 20px; padding: 15px; background: linear-gradient(135deg, #87CEEB 0%, #5B9BD5 100%); border-radius: 8px; color: white;">
                     <div style="font-size: 24px; font-weight: bold; margin-bottom: 5px;">
                         当前积分：<span id="currentShopPoints">0</span>
                     </div>
@@ -182,7 +182,7 @@ $photoCount = $db->fetchOne("SELECT COUNT(*) as total FROM photos WHERE user_id 
                             <h3 style="margin: 0 0 10px 0; font-size: 18px;">每日签到</h3>
                             <div id="checkinStatus" style="color: #666; font-size: 14px;">加载中...</div>
                         </div>
-                        <button id="checkinBtn" class="btn" onclick="doCheckin()" style="padding: 10px 25px; font-size: 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <button id="checkinBtn" class="btn" onclick="doCheckin()" style="padding: 10px 25px; font-size: 16px; background: linear-gradient(135deg, #87CEEB 0%, #5B9BD5 100%);">
                             <span id="checkinBtnText">签到</span>
                         </button>
                     </div>
@@ -190,7 +190,7 @@ $photoCount = $db->fetchOne("SELECT COUNT(*) as total FROM photos WHERE user_id 
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; font-size: 14px;">
                             <div>
                                 <div style="color: #999; margin-bottom: 5px;">连续签到</div>
-                                <div style="font-size: 20px; font-weight: bold; color: #667eea;" id="consecutiveDays">0 天</div>
+                                <div style="font-size: 20px; font-weight: bold; color: #5B9BD5;" id="consecutiveDays">0 天</div>
                             </div>
                             <div>
                                 <div style="color: #999; margin-bottom: 5px;">今日奖励</div>

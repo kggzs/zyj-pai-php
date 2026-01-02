@@ -1,7 +1,7 @@
 @import url('common.css');
 
 body {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #87CEEB 0%, #5B9BD5 100%);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -48,13 +48,13 @@ body {
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #87CEEB 0%, #5B9BD5 100%);
     color: white;
 }
 
 .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 5px 15px rgba(91, 155, 213, 0.4);
 }
 
 .btn-success {

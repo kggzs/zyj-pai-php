@@ -314,9 +314,9 @@ class Email {
         </head>
         <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
             <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-                <h2 style="color: #667eea;">邮箱验证码</h2>
+                <h2 style="color: #5B9BD5;">邮箱验证码</h2>
                 <p>您的验证码是：</p>
-                <div style="background: #f0f4ff; padding: 20px; text-align: center; font-size: 32px; font-weight: bold; color: #667eea; letter-spacing: 5px; margin: 20px 0; border-radius: 8px;">
+                <div style="background: #f0f4ff; padding: 20px; text-align: center; font-size: 32px; font-weight: bold; color: #5B9BD5; letter-spacing: 5px; margin: 20px 0; border-radius: 8px;">
                     {code}
                 </div>
                 <p style="color: #999; font-size: 12px;">验证码有效期为10分钟，请勿泄露给他人。</p>
@@ -345,10 +345,10 @@ class Email {
         </head>
         <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
             <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-                <h2 style="color: #667eea;">密码重置</h2>
+                <h2 style="color: #5B9BD5;">密码重置</h2>
                 <p>您申请了密码重置，请点击下面的链接重置密码：</p>
                 <div style="text-align: center; margin: 30px 0;">
-                    <a href="{resetUrl}" style="display: inline-block; padding: 12px 30px; background: #667eea; color: white; text-decoration: none; border-radius: 6px;">重置密码</a>
+                    <a href="{resetUrl}" style="display: inline-block; padding: 12px 30px; background: #5B9BD5; color: white; text-decoration: none; border-radius: 6px;">重置密码</a>
                 </div>
                 <p style="color: #999; font-size: 12px;">如果无法点击链接，请复制以下地址到浏览器：</p>
                 <p style="color: #999; font-size: 12px; word-break: break-all;">{resetUrl}</p>
@@ -378,11 +378,11 @@ class Email {
         </head>
         <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
             <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-                <h2 style="color: #667eea;">您收到了新照片</h2>
+                <h2 style="color: #5B9BD5;">您收到了新照片</h2>
                 <p>亲爱的 {username}，</p>
                 <p>您收到了 <strong>{photoCount}</strong> 张新照片，请登录查看。</p>
                 <div style="text-align: center; margin: 30px 0;">
-                    <a href="{siteUrl}/dashboard.php" style="display: inline-block; padding: 12px 30px; background: #667eea; color: white; text-decoration: none; border-radius: 6px;">查看照片</a>
+                    <a href="{siteUrl}/dashboard.php" style="display: inline-block; padding: 12px 30px; background: #5B9BD5; color: white; text-decoration: none; border-radius: 6px;">查看照片</a>
                 </div>
             </div>
         </body>
@@ -443,7 +443,7 @@ class Email {
         </head>
         <body style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>
             <div style='max-width: 600px; margin: 0 auto; padding: 20px;'>
-                <h2 style='color: #667eea;'>密码修改提醒</h2>
+                <h2 style='color: #5B9BD5;'>密码修改提醒</h2>
                 <p>亲爱的 {$username}，</p>
                 <p>您的账号密码已成功修改。</p>
                 <div style='background: #f0f4ff; padding: 15px; border-radius: 6px; margin: 20px 0;'>
@@ -452,7 +452,7 @@ class Email {
                 </div>
                 <p>如果这不是您的操作，请立即登录账号修改密码并联系管理员。</p>
                 <div style='text-align: center; margin: 30px 0;'>
-                    <a href='{$this->getSiteUrl()}/dashboard.php' style='display: inline-block; padding: 12px 30px; background: #667eea; color: white; text-decoration: none; border-radius: 6px;'>查看账号</a>
+                    <a href='{$this->getSiteUrl()}/dashboard.php' style='display: inline-block; padding: 12px 30px; background: #5B9BD5; color: white; text-decoration: none; border-radius: 6px;'>查看账号</a>
                 </div>
                 <p style='color: #999; font-size: 12px;'>此邮件由系统自动发送，请勿回复。</p>
             </div>

@@ -254,7 +254,7 @@ function loadInvites() {
                 const countInfo = document.getElementById('inviteCountInfo');
                 if (isVip) {
                     countInfo.textContent = `当前：${total} 个拍摄链接（VIP用户无限制）`;
-                    countInfo.style.color = '#667eea';
+                    countInfo.style.color = '#5B9BD5';
                 } else {
                     countInfo.textContent = `当前：${total}/${maxInvites} 个拍摄链接`;
                     if (total >= maxInvites) {
@@ -305,7 +305,7 @@ function loadInvites() {
                             <div class="invite-header-row">
                                 <div style="flex: 1; min-width: 0;">
                                     <strong>拍摄链接码：</strong>${safeInviteCode}
-                                    ${label ? `<span style="margin-left: 8px; padding: 2px 8px; background: #667eea; color: white; border-radius: 4px; font-size: 12px;">${safeLabel}</span>` : ''}
+                                    ${label ? `<span style="margin-left: 8px; padding: 2px 8px; background: #5B9BD5; color: white; border-radius: 4px; font-size: 12px;">${safeLabel}</span>` : ''}
                                     ${statusBadge}
                                 </div>
                                 ${editButtonHtml}
@@ -509,8 +509,8 @@ function loadPhotos() {
                             <span style="display: flex; align-items: center; gap: 10px; flex: 1;">
                                 ${isVip ? `<input type="checkbox" id="${groupCheckboxId}" class="group-checkbox" data-group-id="${groupId}" onclick="event.stopPropagation(); toggleGroupSelection('${groupId}', '${groupCheckboxId}')" style="cursor: pointer;">` : ''}
                                 <span style="font-weight: bold; font-size: 14px; color: #333;">
-                                    ${label ? `<span style="padding: 2px 8px; background: #667eea; color: white; border-radius: 4px; font-size: 12px; margin-right: 8px;">${label}</span>` : ''}
-                                    拍摄链接码: <span style="color: #667eea;">${inviteCode}</span> <span style="color: #999; font-weight: normal; font-size: 12px;">(${groupedPhotos[inviteCode].length} 张)</span>
+                                    ${label ? `<span style="padding: 2px 8px; background: #5B9BD5; color: white; border-radius: 4px; font-size: 12px; margin-right: 8px;">${label}</span>` : ''}
+                                    拍摄链接码: <span style="color: #5B9BD5;">${inviteCode}</span> <span style="color: #999; font-weight: normal; font-size: 12px;">(${groupedPhotos[inviteCode].length} 张)</span>
                                 </span>
                             </span>
                             <span class="expand-icon" id="${groupId}-icon">▼</span>
@@ -786,7 +786,7 @@ function generateExifInfo(photo) {
     }
     
     let exifHtml = '<div class="exif-section" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">';
-    exifHtml += '<h4 style="margin-bottom: 15px; color: #667eea;">📷 拍摄信息</h4>';
+    exifHtml += '<h4 style="margin-bottom: 15px; color: #5B9BD5;">📷 拍摄信息</h4>';
     
     // 地理位置信息
     if (hasLocation) {
@@ -814,7 +814,7 @@ function generateExifInfo(photo) {
         exifHtml += `<div class="detail-info-item">
             <span class="detail-label">地图：</span>
             <span class="detail-value">
-                <a href="https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}&zoom=15" target="_blank" style="color: #667eea; text-decoration: none;">查看地图</a>
+                <a href="https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}&zoom=15" target="_blank" style="color: #5B9BD5; text-decoration: none;">查看地图</a>
             </span>
         </div>`;
         exifHtml += '</div>';
@@ -1247,7 +1247,7 @@ function loadPoints() {
             if (data.success) {
                 if (data.data.points_log.list.length === 0) {
                     document.getElementById('pointsInfo').innerHTML = `
-                        <div style="padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; margin-bottom: 20px; color: white; text-align: center;">
+                        <div style="padding: 20px; background: linear-gradient(135deg, #87CEEB 0%, #5B9BD5 100%); border-radius: 8px; margin-bottom: 20px; color: white; text-align: center;">
                             <div style="font-size: 14px; opacity: 0.9; margin-bottom: 5px;">总积分</div>
                             <div style="font-size: 32px; font-weight: bold;">${data.data.total_points}</div>
                         </div>
@@ -1305,7 +1305,7 @@ function loadPoints() {
                 }).join('');
                 
                 document.getElementById('pointsInfo').innerHTML = `
-                    <div style="padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; margin-bottom: 20px; color: white; text-align: center;">
+                    <div style="padding: 20px; background: linear-gradient(135deg, #87CEEB 0%, #5B9BD5 100%); border-radius: 8px; margin-bottom: 20px; color: white; text-align: center;">
                         <div style="font-size: 14px; opacity: 0.9; margin-bottom: 5px;">总积分</div>
                         <div style="font-size: 32px; font-weight: bold;">${data.data.total_points}</div>
                     </div>
@@ -1392,7 +1392,7 @@ function renderRanking(data) {
         }
         
         document.getElementById('rankingInfo').innerHTML = `
-            <div style="padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; margin-bottom: 20px; color: white; text-align: center; font-weight: bold;">
+            <div style="padding: 15px; background: linear-gradient(135deg, #87CEEB 0%, #5B9BD5 100%); border-radius: 8px; margin-bottom: 20px; color: white; text-align: center; font-weight: bold;">
                 ${userInfo}
             </div>
         `;
@@ -1439,7 +1439,7 @@ function renderRanking(data) {
         
         return `
             <div class="ranking-item" style="display: flex; align-items: center; padding: 15px; background: white; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                <div style="width: 50px; text-align: center; font-size: 24px; font-weight: bold; color: ${rank <= 3 ? '#667eea' : '#666'};">
+                <div style="width: 50px; text-align: center; font-size: 24px; font-weight: bold; color: ${rank <= 3 ? '#5B9BD5' : '#666'};">
                     ${medal || rank}
                 </div>
                 <div style="flex: 1; margin-left: 15px;">
@@ -1464,7 +1464,7 @@ function renderRanking(data) {
                     ` : ''}
                 </div>
                 <div style="display: flex; flex-direction: column; align-items: flex-end; min-width: 80px;">
-                    <div style="font-size: 20px; font-weight: bold; color: #667eea;">
+                    <div style="font-size: 20px; font-weight: bold; color: #5B9BD5;">
                         ${value}
                     </div>
                     <div style="font-size: 12px; color: #999;">
@@ -1970,7 +1970,7 @@ function displayShopProducts(products) {
     };
     
     const html = products.map(product => {
-        const typeInfo = typeMap[product.type] || { name: product.type, icon: '🎁', color: '#667eea' };
+        const typeInfo = typeMap[product.type] || { name: product.type, icon: '🎁', color: '#5B9BD5' };
         const valueInfo = product.value !== null ? ` · ${product.value}${product.type === 'vip_temporary' ? '天' : '个'}` : '';
         const stockInfo = product.total_stock !== null 
             ? `<div style="font-size: 12px; color: #666; margin-top: 5px;">剩余库存：${product.remaining_stock} / ${product.total_stock}</div>` 
@@ -1979,7 +1979,7 @@ function displayShopProducts(products) {
             ? `<div style="font-size: 12px; color: #666; margin-top: 3px;">每人限兑：${product.max_per_user}次</div>` 
             : '';
         const userExchangedInfo = product.max_per_user !== null && product.user_exchanged_count > 0
-            ? `<div style="font-size: 12px; color: #667eea; margin-top: 3px;">您已兑换：${product.user_exchanged_count}次</div>`
+            ? `<div style="font-size: 12px; color: #5B9BD5; margin-top: 3px;">您已兑换：${product.user_exchanged_count}次</div>`
             : '';
         
         const canExchange = product.can_exchange;
@@ -2001,13 +2001,13 @@ function displayShopProducts(products) {
                 
                 <div style="border-top: 1px solid #f0f0f0; padding-top: 15px; margin-top: 15px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                        <div style="font-size: 24px; font-weight: bold; color: #667eea;">
+                        <div style="font-size: 24px; font-weight: bold; color: #5B9BD5;">
                             <span style="font-size: 18px;">💰</span> ${product.points_price} 积分
                         </div>
                         <button class="btn" 
                                 onclick="exchangeProduct(${product.id})" 
                                 ${!canExchange ? 'disabled' : ''}
-                                style="background: ${canExchange ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : '#ccc'}; color: white; border: none; padding: 8px 20px; border-radius: 6px; cursor: ${canExchange ? 'pointer' : 'not-allowed'}; font-weight: 500;">
+                                style="background: ${canExchange ? 'linear-gradient(135deg, #87CEEB 0%, #5B9BD5 100%)' : '#ccc'}; color: white; border: none; padding: 8px 20px; border-radius: 6px; cursor: ${canExchange ? 'pointer' : 'not-allowed'}; font-weight: 500;">
                             ${buttonText}
                         </button>
                     </div>

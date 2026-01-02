@@ -107,6 +107,9 @@ class Photo {
     public function getUserPhotos($userId, $page = 1, $pageSize = 20, $inviteCode = null, $tagName = null) {
         $offset = ($page - 1) * $pageSize;
         
+        // 记录调试信息
+        error_log('Photo::getUserPhotos: 查询参数, userId: ' . $userId . ', page: ' . $page . ', pageSize: ' . $pageSize . ', inviteCode: ' . ($inviteCode ?? 'NULL') . ', tagName: ' . ($tagName ?? 'NULL'));
+        
         $where = "p.user_id = ? AND p.deleted_at IS NULL";
         $params = [$userId];
         
@@ -127,29 +130,37 @@ class Photo {
             $params[] = $userId;
         }
         
-        // 按邀请码标签优先排序，然后按上传时间倒序
-        $sql = "SELECT DISTINCT p.*, 
+        // 按上传时间倒序排序（新照片优先），然后按邀请码标签排序
+        // 注意：使用 p.id 而不是 DISTINCT p.*，避免因 LEFT JOIN 导致的重复记录问题
+        $sql = "SELECT p.*, 
                        COALESCE(i.label, '') as invite_label
                 FROM photos p
                 LEFT JOIN invites i ON p.invite_code = i.invite_code
                 WHERE {$where} 
                 ORDER BY 
+                    p.upload_time DESC,
                     CASE WHEN i.label IS NOT NULL AND i.label != '' THEN 0 ELSE 1 END,
                     i.label ASC,
-                    p.upload_time DESC 
+                    p.id DESC
                 LIMIT ? OFFSET ?";
         $params[] = $pageSize;
         $params[] = $offset;
         
+        error_log('Photo::getUserPhotos: 执行SQL: ' . $sql);
+        error_log('Photo::getUserPhotos: SQL参数: ' . json_encode($params));
+        
         $photos = $this->db->fetchAll($sql, $params);
         
-        // 获取总数
-        $countSql = "SELECT COUNT(DISTINCT p.id) as total 
+        error_log('Photo::getUserPhotos: 查询到 ' . count($photos) . ' 张照片');
+        
+        // 获取总数（不需要 DISTINCT，因为每个照片只有一条记录）
+        $countSql = "SELECT COUNT(p.id) as total 
                      FROM photos p
-                     LEFT JOIN invites i ON p.invite_code = i.invite_code
                      WHERE {$where}";
         $countParams = array_slice($params, 0, -2); // 移除 LIMIT 和 OFFSET 参数
         $total = $this->db->fetchOne($countSql, $countParams);
+        
+        error_log('Photo::getUserPhotos: 照片总数: ' . ($total['total'] ?? 0));
         
         return [
             'list' => $photos,

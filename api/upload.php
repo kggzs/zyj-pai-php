@@ -160,17 +160,23 @@ try {
     
     $invite = $inviteResult['invite'];
     
+    // 记录调试信息
+    error_log('upload.php: 开始处理图片上传, inviteCode: ' . $inviteCode . ', imageData大小: ' . strlen($imageData) . ' bytes');
+    
     // 处理图片（使用二进制数据）
     $processor = new ImageProcessor();
     $result = $processor->processImageBinary($imageData, $inviteCode);
     
     if (!$result['success']) {
+        error_log('upload.php: 图片处理失败, 错误信息: ' . ($result['message'] ?? '未知错误'));
         if (ob_get_level()) {
             ob_clean();
         }
         echo json_encode($result);
         exit;
     }
+    
+    error_log('upload.php: 图片处理成功, 保存路径: ' . $result['original_path']);
     
     // 获取上传IP（兼容CDN和反向代理）
     $uploadIp = Security::getClientIp();
@@ -179,9 +185,13 @@ try {
     $uploadUa = $_SERVER['HTTP_USER_AGENT'] ?? '';
     
     // 保存照片信息（包含EXIF数据）
+    try {
     $photoModel = new Photo();
     $exifData = $result['exif_data'] ?? [];
-    $photoModel->savePhoto(
+        
+        error_log('upload.php: 准备保存照片信息, inviteId: ' . $invite['id'] . ', inviteCode: ' . $inviteCode . ', userId: ' . $invite['user_id'] . ', originalPath: ' . $result['original_path']);
+        
+        $photoId = $photoModel->savePhoto(
         $invite['id'],
         $inviteCode,
         $invite['user_id'],
@@ -190,6 +200,22 @@ try {
         $uploadUa,
         $exifData
     );
+        
+        error_log('upload.php: 照片信息保存成功, photoId: ' . $photoId . ', inviteId: ' . $invite['id'] . ', userId: ' . $invite['user_id'] . ', inviteCode: ' . $inviteCode);
+        
+        // 验证照片是否真的保存到数据库
+        $db = Database::getInstance();
+        $savedPhoto = $db->fetchOne("SELECT id, user_id, invite_code, original_path, deleted_at FROM photos WHERE id = ?", [$photoId]);
+        if ($savedPhoto) {
+            error_log('upload.php: 验证照片已保存到数据库, photoId: ' . $savedPhoto['id'] . ', userId: ' . $savedPhoto['user_id'] . ', inviteCode: ' . $savedPhoto['invite_code'] . ', deleted_at: ' . ($savedPhoto['deleted_at'] ?? 'NULL'));
+        } else {
+            error_log('upload.php: 警告！照片未保存到数据库, photoId: ' . $photoId);
+        }
+    } catch (Exception $e) {
+        error_log('upload.php: 保存照片信息失败, 错误: ' . $e->getMessage() . ', 堆栈: ' . $e->getTraceAsString());
+        // 即使保存失败，也返回成功（因为文件已保存）
+        // 但记录错误以便排查
+    }
     
     // 异步更新邀请上传数量（不阻塞响应）
     register_shutdown_function(function() use ($inviteModel, $invite) {

@@ -46,6 +46,7 @@ $photoCount = $db->fetchOne("SELECT COUNT(*) as total FROM photos WHERE user_id 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>用户中心 - <?php echo htmlspecialchars(Helper::getProjectName()); ?></title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📷</text></svg>">
     <link rel="stylesheet" href="assets/css/dashboard.css">
 </head>
 <body>
@@ -122,7 +123,7 @@ $photoCount = $db->fetchOne("SELECT COUNT(*) as total FROM photos WHERE user_id 
             <button class="nav-btn" onclick="showSection('photos')">照片列表</button>
             <button class="nav-btn" onclick="showSection('shop')">积分商城</button>
             <button class="nav-btn" onclick="showSection('points')">积分明细</button>
-            <button class="nav-btn" onclick="showSection('ranking')">排行榜</button>
+            <button class="nav-btn" onclick="showSection('ranking')">排行榜单</button>
             <button class="nav-btn" onclick="showSection('profile')">个人资料</button>
             <button class="nav-btn" onclick="showSection('security')">账号安全</button>
             <button class="nav-btn nav-btn-logout" onclick="window.location.href='api/logout.php'">退出登录</button>
@@ -432,7 +433,7 @@ $photoCount = $db->fetchOne("SELECT COUNT(*) as total FROM photos WHERE user_id 
 
     <script>
         // 传递VIP状态到前端
-        window.userIsVip = <?php echo $isVip ? 'true' : 'false'; ?>;
+        window.userIsVip = <?php echo json_encode($isVip); ?>;
     </script>
     <script src="assets/js/content-renderer.js"></script>
     <script src="assets/js/dashboard.js?v=<?php echo time(); ?>"></script>

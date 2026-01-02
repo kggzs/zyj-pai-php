@@ -12,10 +12,15 @@ function showSection(section) {
     document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
     document.getElementById(section).classList.add('active');
+    if (event && event.target) {
     event.target.classList.add('active');
+    }
     
     if (section === 'invites') loadInvites();
-    if (section === 'photos') loadPhotos();
+    if (section === 'photos') {
+        // 切换到照片列表时，强制刷新
+        loadPhotos();
+    }
     if (section === 'shop') loadShopProducts();
     if (section === 'points') loadPoints();
     if (section === 'ranking') loadRanking('total');
@@ -444,17 +449,33 @@ function parseDeviceModel(ua) {
 let currentTagFilter = '';
 
 function loadPhotos() {
+    // 显示加载状态
+    const photoListElement = document.getElementById('photoList');
+    if (photoListElement) {
+        photoListElement.innerHTML = '<div style="text-align:center; padding:40px; color:#999;">加载中...</div>';
+    }
+    
     // 构建请求URL
     let url = 'api/get_photos.php';
     const params = [];
+    // 设置较大的page_size，确保加载所有照片（包括所有拍摄码）
+    params.push('page_size=10000');
     if (currentTagFilter) {
         params.push('tag=' + encodeURIComponent(currentTagFilter));
     }
+    // 添加时间戳防止缓存
+    params.push('_t=' + Date.now());
     if (params.length > 0) {
         url += '?' + params.join('&');
     }
     
-    fetch(url)
+    fetch(url, {
+        method: 'GET',
+        cache: 'no-cache',
+        headers: {
+            'Cache-Control': 'no-cache'
+        }
+    })
         .then(res => res.json())
         .then(data => {
             if (data.success) {
@@ -2139,6 +2160,11 @@ function copyRegisterUrl() {
 // 页面加载时加载邀请列表和公告
 loadInvites();
 loadAnnouncements();
+
+// 如果当前在照片列表页面，也加载照片列表
+if (document.getElementById('photos') && document.getElementById('photos').classList.contains('active')) {
+    loadPhotos();
+}
 
 // 如果当前在个人资料页面，加载注册码
 if (document.getElementById('profile').classList.contains('active')) {

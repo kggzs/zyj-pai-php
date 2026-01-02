@@ -234,9 +234,155 @@ body {
     color: rgba(255, 255, 255, 0.9);
     font-size: 13px;
     line-height: 1.6;
-    white-space: pre-wrap;
     word-break: break-word;
     margin-bottom: 8px;
+    text-align: left;
+}
+
+/* Markdown渲染后的段落样式 */
+.announcement-content-user p {
+    margin: 0.5em 0;
+    line-height: 1.6;
+}
+
+.announcement-content-user p:first-child {
+    margin-top: 0;
+}
+
+.announcement-content-user p:last-child {
+    margin-bottom: 0;
+}
+
+/* 其他Markdown元素样式 */
+.announcement-content-user h1,
+.announcement-content-user h2,
+.announcement-content-user h3,
+.announcement-content-user h4,
+.announcement-content-user h5,
+.announcement-content-user h6 {
+    margin: 0.8em 0 0.5em 0;
+    font-weight: bold;
+    line-height: 1.4;
+    text-align: left;
+    display: block;
+    width: 100%;
+}
+
+.announcement-content-user h1:first-child,
+.announcement-content-user h2:first-child,
+.announcement-content-user h3:first-child,
+.announcement-content-user h4:first-child,
+.announcement-content-user h5:first-child,
+.announcement-content-user h6:first-child {
+    margin-top: 0;
+}
+
+.announcement-content-user ul,
+.announcement-content-user ol {
+    margin: 0.5em 0;
+    padding-left: 1.5em;
+    text-align: left;
+}
+
+.announcement-content-user li {
+    margin: 0.2em 0;
+    line-height: 1.6;
+}
+
+.announcement-content-user blockquote {
+    margin: 0.5em 0;
+    padding-left: 1em;
+    border-left: 3px solid rgba(255, 255, 255, 0.3);
+    color: rgba(255, 255, 255, 0.8);
+    text-align: left;
+}
+
+.announcement-content-user code {
+    background: rgba(255, 255, 255, 0.15);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.9em;
+}
+
+.announcement-content-user pre {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 10px;
+    border-radius: 4px;
+    overflow-x: auto;
+    margin: 0.5em 0;
+}
+
+.announcement-content-user pre code {
+    background: none;
+    padding: 0;
+}
+
+/* 商品描述样式（支持HTML和Markdown） */
+.shop-product-description {
+    line-height: 1.6;
+    word-break: break-word;
+}
+
+.shop-product-description p {
+    margin: 0.5em 0;
+    line-height: 1.6;
+}
+
+.shop-product-description p:first-child {
+    margin-top: 0;
+}
+
+.shop-product-description p:last-child {
+    margin-bottom: 0;
+}
+
+.shop-product-description h1,
+.shop-product-description h2,
+.shop-product-description h3,
+.shop-product-description h4,
+.shop-product-description h5,
+.shop-product-description h6 {
+    margin: 0.8em 0 0.5em 0;
+    font-weight: bold;
+    line-height: 1.4;
+}
+
+.shop-product-description ul,
+.shop-product-description ol {
+    margin: 0.5em 0;
+    padding-left: 1.5em;
+}
+
+.shop-product-description li {
+    margin: 0.2em 0;
+    line-height: 1.6;
+}
+
+.shop-product-description blockquote {
+    margin: 0.5em 0;
+    padding-left: 1em;
+    border-left: 3px solid #ddd;
+    color: #666;
+}
+
+.shop-product-description code {
+    background: #f0f0f0;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.9em;
+}
+
+.shop-product-description pre {
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 4px;
+    overflow-x: auto;
+    margin: 0.5em 0;
+}
+
+.shop-product-description pre code {
+    background: none;
+    padding: 0;
 }
 
 /* 公告内容中的链接样式 */
@@ -283,6 +429,16 @@ body {
     padding: 8px 12px;
     border: 1px solid rgba(255, 255, 255, 0.2);
     text-align: left;
+}
+
+/* 确保所有内容元素左对齐 */
+.announcement-content-user * {
+    text-align: left;
+}
+
+/* 但按钮和链接可以保持原有样式 */
+.announcement-content-user a.nav-btn {
+    text-align: center;
 }
 
 .announcement-content-user table th {
@@ -383,6 +539,64 @@ body {
         font-size: 12px;
         line-height: 1.5;
         margin-bottom: 10px;
+        text-align: left;
+    }
+    
+    /* 移动端Markdown元素优化 */
+    .announcement-content-user h1,
+    .announcement-content-user h2,
+    .announcement-content-user h3,
+    .announcement-content-user h4,
+    .announcement-content-user h5,
+    .announcement-content-user h6 {
+        text-align: left !important;
+        margin: 0.6em 0 0.4em 0;
+        display: block;
+        width: 100%;
+    }
+    
+    .announcement-content-user h1 {
+        font-size: 1.3em;
+    }
+    
+    .announcement-content-user h2 {
+        font-size: 1.2em;
+    }
+    
+    .announcement-content-user h3 {
+        font-size: 1.1em;
+    }
+    
+    .announcement-content-user p {
+        text-align: left !important;
+        margin: 0.4em 0;
+    }
+    
+    .announcement-content-user ul,
+    .announcement-content-user ol {
+        text-align: left !important;
+        padding-left: 1.2em;
+        margin: 0.4em 0;
+    }
+    
+    .announcement-content-user blockquote {
+        text-align: left !important;
+        margin: 0.4em 0;
+        padding-left: 0.8em;
+    }
+    
+    .announcement-content-user table {
+        text-align: left !important;
+        font-size: 11px;
+        width: 100%;
+        display: block;
+        overflow-x: auto;
+    }
+    
+    .announcement-content-user table th,
+    .announcement-content-user table td {
+        text-align: left !important;
+        padding: 6px 8px;
     }
     
     .announcement-mark-read-btn {
@@ -433,6 +647,68 @@ body {
     .announcement-content-user {
         font-size: 11px;
         line-height: 1.4;
+        text-align: left;
+    }
+    
+    /* 小屏幕Markdown元素优化 */
+    .announcement-content-user h1,
+    .announcement-content-user h2,
+    .announcement-content-user h3,
+    .announcement-content-user h4,
+    .announcement-content-user h5,
+    .announcement-content-user h6 {
+        text-align: left;
+        margin: 0.5em 0 0.3em 0;
+        font-size: 1em;
+    }
+    
+    .announcement-content-user h1 {
+        font-size: 1.2em;
+    }
+    
+    .announcement-content-user h2 {
+        font-size: 1.15em;
+    }
+    
+    .announcement-content-user h3 {
+        font-size: 1.1em;
+    }
+    
+    .announcement-content-user p {
+        text-align: left;
+        margin: 0.3em 0;
+    }
+    
+    .announcement-content-user ul,
+    .announcement-content-user ol {
+        text-align: left;
+        padding-left: 1em;
+        margin: 0.3em 0;
+    }
+    
+    .announcement-content-user blockquote {
+        text-align: left;
+        margin: 0.3em 0;
+        padding-left: 0.6em;
+    }
+    
+    .announcement-content-user table {
+        text-align: left;
+        font-size: 10px;
+    }
+    
+    .announcement-content-user table th,
+    .announcement-content-user table td {
+        text-align: left;
+        padding: 4px 6px;
+    }
+    
+    .announcement-content-user a.nav-btn {
+        display: block;
+        width: 100%;
+        text-align: center;
+        margin: 8px 0;
+        box-sizing: border-box;
     }
     
     .announcement-mark-read-btn {

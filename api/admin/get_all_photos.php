@@ -88,7 +88,12 @@ try {
     $username = isset($_GET['username']) ? trim($_GET['username']) : null;
     $inviteCode = isset($_GET['invite_code']) ? trim($_GET['invite_code']) : null;
     
+    // 记录调试信息
+    error_log('get_all_photos.php: 查询照片列表, page: ' . $page . ', pageSize: ' . $pageSize . ', userId: ' . ($userId ?? 'NULL') . ', username: ' . ($username ?? 'NULL') . ', inviteCode: ' . ($inviteCode ?? 'NULL'));
+    
     $result = $adminModel->getAllPhotos($page, $pageSize, $userId, $username, $inviteCode);
+    
+    error_log('get_all_photos.php: 查询结果, 照片数量: ' . count($result['list']) . ', 总数: ' . $result['total']);
     
     $config = require __DIR__ . '/../../config/config.php';
     

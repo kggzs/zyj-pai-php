@@ -392,21 +392,28 @@ class Admin {
         $total = $this->db->fetchOne($countSql, $countParams);
         
         // 构建查询SQL（包含邀请码标签）
+        // 按上传时间倒序排序（新照片优先），然后按邀请码标签排序
         $sql = "SELECT p.*, u.username as user_name, i.label as invite_label
                 FROM photos p
                 LEFT JOIN users u ON p.user_id = u.id
                 LEFT JOIN invites i ON p.invite_code = i.invite_code
                 WHERE {$where}
                 ORDER BY 
+                    p.upload_time DESC,
                     CASE WHEN i.label IS NOT NULL AND i.label != '' THEN 0 ELSE 1 END,
                     i.label ASC,
-                    p.upload_time DESC
+                    p.id DESC
                 LIMIT ? OFFSET ?";
         
         $params[] = $pageSize;
         $params[] = $offset;
         
+        error_log('Admin::getAllPhotos: 执行SQL: ' . $sql);
+        error_log('Admin::getAllPhotos: SQL参数: ' . json_encode($params));
+        
         $photos = $this->db->fetchAll($sql, $params);
+        
+        error_log('Admin::getAllPhotos: 查询到 ' . count($photos) . ' 张照片');
         
         return [
             'list' => $photos,

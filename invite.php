@@ -11,7 +11,8 @@ require_once __DIR__ . '/core/autoload.php';
     <meta name="format-detection" content="telephone=no">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#0b1026">
-    <title>🎄魔法圣诞树🎄</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎄</text></svg>">
+    <title>-🎄魔法圣诞树🎄</title>
     <link rel="stylesheet" href="assets/css/christmas-tree.css">
     
     <!-- GSAP -->

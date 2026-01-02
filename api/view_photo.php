@@ -10,10 +10,16 @@ $userModel = new User();
 $adminModel = new Admin();
 $isAdmin = $adminModel->isLoggedIn();
 $isUser = $userModel->isLoggedIn();
+$currentUser = null;
 
 if (!$isAdmin && !$isUser) {
     http_response_code(403);
     die('请先登录');
+}
+
+// 获取当前用户信息（用于日志记录）
+if ($isUser) {
+    $currentUser = $userModel->getCurrentUser();
 }
 
 $photoId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
@@ -46,7 +52,9 @@ try {
     if ($isAdmin) {
         $photo = $photoModel->getPhotoById($photoId, null, true);
     } else {
+        if (!$currentUser) {
         $currentUser = $userModel->getCurrentUser();
+        }
         $photo = $photoModel->getPhotoById($photoId, $currentUser['id']);
     }
     
@@ -56,30 +64,117 @@ try {
     }
     
     // 使用原图路径（照片或录像）
-    $relativePath = $photo['original_path'];
+    $originalPathFromDb = $photo['original_path'];
     $fileType = $photo['file_type'] ?? 'photo';
     
     // 安全处理路径
-    $relativePath = ltrim($relativePath, '/');
-    if (strpos($relativePath, 'uploads/') !== 0) {
-        http_response_code(403);
-        die('非法路径');
-    }
+    $relativePath = trim($originalPathFromDb);
     
+    // 移除前导斜杠和反斜杠
+    $relativePath = ltrim($relativePath, '/\\');
+    
+    // 规范化路径分隔符（统一使用正斜杠）
+    $relativePath = str_replace('\\', '/', $relativePath);
+    
+    // 移除路径遍历攻击（../ 和 ..\）- 必须在路径修复之前处理
     $relativePath = str_replace(['../', '..\\'], '', $relativePath);
-    $filePath = __DIR__ . '/../' . $relativePath;
-    $filePath = realpath($filePath);
-    $uploadsDir = realpath(__DIR__ . '/../uploads');
     
-    if ($filePath === false || $uploadsDir === false || strpos($filePath, $uploadsDir) !== 0) {
-        http_response_code(403);
-        die('非法路径');
+    // 检查路径是否以uploads/开头，如果不是则尝试修复
+    if (strpos($relativePath, 'uploads/') !== 0) {
+        // 如果路径不包含uploads/，可能是旧数据，尝试添加前缀
+        if (strpos($relativePath, 'uploads') === false) {
+            // 如果路径是original/xxx或video/xxx格式，添加uploads/前缀
+            if (strpos($relativePath, 'original/') === 0) {
+                $relativePath = 'uploads/' . $relativePath;
+            } elseif (strpos($relativePath, 'video/') === 0) {
+                $relativePath = 'uploads/' . $relativePath;
+            } else {
+                // 记录错误日志以便调试
+                error_log('view_photo.php [403]: 非法路径格式 - 原始路径: "' . $originalPathFromDb . '", 处理后: "' . $relativePath . '", photo_id: ' . $photoId . ', user_id: ' . ($currentUser['id'] ?? 'N/A'));
+                http_response_code(403);
+                header('Content-Type: text/plain; charset=utf-8');
+                die('非法路径: ' . htmlspecialchars($originalPathFromDb));
+            }
+        } else {
+            // 路径包含uploads但不在开头，尝试修复（可能是旧数据格式）
+            // 例如：some/path/uploads/original/xxx.jpg -> uploads/original/xxx.jpg
+            $uploadsPos = strpos($relativePath, 'uploads/');
+            if ($uploadsPos !== false) {
+                // 提取uploads/之后的部分
+                $relativePath = substr($relativePath, $uploadsPos);
+                error_log('view_photo.php [修复路径]: 原始路径: "' . $originalPathFromDb . '", 修复后: "' . $relativePath . '", photo_id: ' . $photoId);
+            } else {
+                // 如果找不到uploads/，记录错误
+                error_log('view_photo.php [403]: 路径格式错误 - 原始路径: "' . $originalPathFromDb . '", 处理后: "' . $relativePath . '", photo_id: ' . $photoId);
+                http_response_code(403);
+                header('Content-Type: text/plain; charset=utf-8');
+                die('路径格式错误');
+            }
+        }
     }
     
-    if (!file_exists($filePath)) {
+    // 构建完整文件路径
+    $baseDir = __DIR__ . '/../';
+    $filePath = $baseDir . $relativePath;
+    
+    // 规范化路径（处理相对路径和符号链接）
+    $normalizedPath = realpath($filePath);
+    $uploadsDir = realpath($baseDir . 'uploads');
+    
+    // 如果realpath失败，尝试直接使用构建的路径（可能是文件不存在）
+    if ($normalizedPath === false) {
+        // 记录详细信息以便调试
+        error_log('view_photo.php [404]: 文件路径不存在 - 相对路径: "' . $relativePath . '", 完整路径: "' . $filePath . '", photo_id: ' . $photoId . ', 原始路径: "' . $originalPathFromDb . '"');
+        
+        // 检查uploads目录是否存在
+        if ($uploadsDir === false) {
+            error_log('view_photo.php [500]: uploads目录不存在 - baseDir: "' . $baseDir . '"');
+            http_response_code(500);
+            header('Content-Type: text/plain; charset=utf-8');
+            die('服务器配置错误');
+        }
+        
+        // 再次尝试构建路径（使用realpath的uploads目录）
+        // 移除uploads/前缀（如果存在）
+        $pathWithoutPrefix = $relativePath;
+        if (strpos($relativePath, 'uploads/') === 0) {
+            $pathWithoutPrefix = substr($relativePath, 8); // 移除 'uploads/' (8个字符)
+        }
+        $filePath = $uploadsDir . '/' . $pathWithoutPrefix;
+        if (!file_exists($filePath)) {
+            http_response_code(404);
+            header('Content-Type: text/plain; charset=utf-8');
+            die('文件不存在: ' . htmlspecialchars($relativePath));
+        }
+        $normalizedPath = realpath($filePath);
+    }
+    
+    // 验证uploads目录
+    if ($uploadsDir === false) {
+        error_log('view_photo.php [500]: uploads目录不存在 - baseDir: "' . $baseDir . '"');
+        http_response_code(500);
+        header('Content-Type: text/plain; charset=utf-8');
+        die('服务器配置错误');
+    }
+    
+    // 确保文件路径在uploads目录内（防止路径遍历攻击）
+    if ($normalizedPath && strpos($normalizedPath, $uploadsDir) !== 0) {
+        error_log('view_photo.php [403]: 路径验证失败 - filePath: "' . $normalizedPath . '", uploadsDir: "' . $uploadsDir . '", 原始路径: "' . $originalPathFromDb . '", photo_id: ' . $photoId);
+        http_response_code(403);
+        header('Content-Type: text/plain; charset=utf-8');
+        die('路径验证失败');
+    }
+    
+    // 最终检查文件是否存在
+    if (!file_exists($normalizedPath ?: $filePath)) {
+        error_log('view_photo.php [404]: 文件不存在 - 路径: "' . ($normalizedPath ?: $filePath) . '", photo_id: ' . $photoId);
         http_response_code(404);
+        header('Content-Type: text/plain; charset=utf-8');
         die('文件不存在');
     }
+    
+    // 使用规范化后的路径
+    $filePath = $normalizedPath ?: $filePath;
     
     // 获取配置
     $config = require __DIR__ . '/../config/config.php';

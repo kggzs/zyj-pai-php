@@ -93,7 +93,7 @@ function generateThumbnailBase64($imagePath, $maxSize = 150) {
 try {
     $currentUser = $userModel->getCurrentUser();
     $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-    $pageSize = isset($_GET['page_size']) ? (int)$_GET['page_size'] : 20;
+    $pageSize = isset($_GET['page_size']) ? (int)$_GET['page_size'] : null;
     $inviteCode = isset($_GET['invite_code']) ? trim($_GET['invite_code']) : null;
     $tagName = isset($_GET['tag']) ? trim($_GET['tag']) : null;
     
@@ -101,8 +101,12 @@ try {
     if ($page < 1) {
         $page = 1;
     }
-    if ($pageSize < 1 || $pageSize > 100) {
-        $pageSize = 20;
+    // 如果没有指定page_size，默认加载所有照片（设置一个较大的值，比如10000）
+    // 这样可以确保所有拍摄码的照片都能显示
+    if ($pageSize === null || $pageSize < 1) {
+        $pageSize = 10000; // 足够大的值，确保加载所有照片
+    } elseif ($pageSize > 10000) {
+        $pageSize = 10000; // 限制最大值为10000，防止性能问题
     }
     
     // 验证邀请码格式（如果提供）
@@ -126,7 +130,13 @@ try {
     }
     
     $photoModel = new Photo();
+    
+    // 记录调试信息
+    error_log('get_photos.php: 查询照片列表, userId: ' . $currentUser['id'] . ', page: ' . $page . ', pageSize: ' . $pageSize . ', inviteCode: ' . ($inviteCode ?? 'NULL') . ', tagName: ' . ($tagName ?? 'NULL'));
+    
     $result = $photoModel->getUserPhotos($currentUser['id'], $page, $pageSize, $inviteCode, $tagName);
+    
+    error_log('get_photos.php: 查询结果, 照片数量: ' . count($result['list']) . ', 总数: ' . $result['total']);
     
     $config = require __DIR__ . '/../config/config.php';
     

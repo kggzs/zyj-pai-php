@@ -353,7 +353,7 @@ class Security {
             'x_frame_options' => $securityConfig['x_frame_options'] ?? true,
             'x_xss_protection' => $securityConfig['x_xss_protection'] ?? true,
             'strict_transport_security' => $securityConfig['strict_transport_security'] ?? true,
-            'csp_policy' => $securityConfig['csp_policy'] ?? "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self';",
+            'csp_policy' => $securityConfig['csp_policy'] ?? "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self';",
             'hsts_max_age' => $securityConfig['hsts_max_age'] ?? 31536000, // 1年
             'hsts_include_subdomains' => $securityConfig['hsts_include_subdomains'] ?? true,
         ], $options);

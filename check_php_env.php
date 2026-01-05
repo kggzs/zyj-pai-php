@@ -237,6 +237,15 @@ header('Content-Type: text/html; charset=utf-8');
                 'icon' => $pdoMysqlLoaded ? '✅' : '❌'
             ];
             
+            // EXIF 扩展检查（可选，用于EXIF数据解析）
+            $exifLoaded = extension_loaded('exif') && function_exists('exif_read_data');
+            $checks[] = [
+                'label' => 'EXIF 扩展',
+                'value' => $exifLoaded ? '已启用（支持EXIF数据解析）' : '未安装（EXIF解析功能不可用）',
+                'status' => $exifLoaded ? 'pass' : 'warning',
+                'icon' => $exifLoaded ? '✅' : '⚠️'
+            ];
+            
             // Session 支持检查
             $totalChecks++;
             $sessionOk = function_exists('session_start');
@@ -478,6 +487,16 @@ header('Content-Type: text/html; charset=utf-8');
                         echo ' Ubuntu/Debian: <code>sudo apt-get install php-mysql</code>，CentOS/RHEL: <code>sudo yum install php-mysql</code>';
                     }
                     echo '</p>';
+                }
+                
+                if (!$exifLoaded) {
+                    echo '<p><strong>EXIF 扩展未安装（可选）：</strong>EXIF扩展用于解析照片的EXIF数据（GPS位置、相机参数等）。';
+                    if (PHP_OS_FAMILY === 'Linux') {
+                        echo ' Ubuntu/Debian: <code>sudo apt-get install php-exif</code>，CentOS/RHEL: <code>sudo yum install php-exif</code>。';
+                    } elseif (PHP_OS_FAMILY === 'Windows') {
+                        echo ' 在 php.ini 中取消注释 <code>extension=exif</code>（注意：EXIF扩展依赖mbstring，确保mbstring已启用）。';
+                    }
+                    echo ' 如果没有EXIF扩展，照片上传功能仍然可用，但无法解析EXIF数据。</p>';
                 }
                 
                 if (!$sessionOk) {

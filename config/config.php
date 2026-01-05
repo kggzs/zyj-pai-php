@@ -102,7 +102,7 @@ return [
     'security_headers' => [
         'enabled' => true, // 是否启用安全响应头
         'csp' => true, // 内容安全策略（CSP）
-        'csp_policy' => "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self';", // CSP策略（可根据实际需求调整）
+        'csp_policy' => "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self';", // CSP策略（可根据实际需求调整）
         'x_content_type_options' => true, // X-Content-Type-Options: nosniff
         'x_frame_options' => true, // X-Frame-Options
         'x_frame_options_value' => 'DENY', // X-Frame-Options值：DENY（禁止）或 SAMEORIGIN（同源允许）

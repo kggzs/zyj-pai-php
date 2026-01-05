@@ -143,11 +143,6 @@ $photoCount = $db->fetchOne("SELECT COUNT(*) as total FROM photos WHERE user_id 
             <!-- 照片列表 -->
             <div id="photos" class="section">
                 <h2>照片列表</h2>
-                <div style="margin-bottom: 20px; display: flex; gap: 8px; align-items: center;">
-                    <input type="text" id="tagSearchInput" placeholder="搜索标签..." style="padding: 6px 10px; border: 1px solid #ddd; border-radius: 4px; width: 180px; font-size: 13px;">
-                    <button class="btn" onclick="searchByTag()" style="padding: 6px 15px; font-size: 13px;">搜索</button>
-                    <button class="btn" onclick="resetPhotoFilter()" style="background: #999; padding: 6px 15px; font-size: 13px;">重置</button>
-                </div>
                 <div id="batchActions" class="batch-actions" style="margin-bottom: 15px; padding: 10px; background: #f0f0f0; border-radius: 4px; gap: 10px; align-items: center;">
                     <span id="selectedCount" style="font-weight: bold; color: #5B9BD5;">已选择 0 张</span>
                     <button class="btn" onclick="batchDeletePhotos()" style="background: #dc3545; padding: 6px 15px; font-size: 13px;">批量删除</button>

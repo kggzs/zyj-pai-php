@@ -446,8 +446,6 @@ function parseDeviceModel(ua) {
     return '未知设备';
 }
 
-let currentTagFilter = '';
-
 function loadPhotos() {
     // 显示加载状态
     const photoListElement = document.getElementById('photoList');
@@ -460,9 +458,6 @@ function loadPhotos() {
     const params = [];
     // 设置较大的page_size，确保加载所有照片（包括所有拍摄码）
     params.push('page_size=10000');
-    if (currentTagFilter) {
-        params.push('tag=' + encodeURIComponent(currentTagFilter));
-    }
     // 添加时间戳防止缓存
     params.push('_t=' + Date.now());
     if (params.length > 0) {
@@ -554,8 +549,7 @@ function loadPhotos() {
                         const formatTime = uploadTime ? uploadTime.replace(/:\d{2}$/, '').replace(' ', ' ') : '未知';
                         
                         const tagsHtml = tags.map(tag => {
-                            const safeName = (tag.name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
-                            return `<span class="photo-tag" onclick="searchByTagName('${safeName}')">${tag.name || ''}</span>`;
+                            return `<span class="photo-tag">${tag.name || ''}</span>`;
                         }).join('');
                         
                         // 列表中统一使用缩略图图片，保证卡片高度一致
@@ -612,26 +606,6 @@ function loadPhotos() {
 }
 
 
-// 按标签搜索
-function searchByTag() {
-    const tagInput = document.getElementById('tagSearchInput');
-    currentTagFilter = tagInput.value.trim();
-    loadPhotos();
-}
-
-// 按标签名搜索（点击标签时）
-function searchByTagName(tagName) {
-    document.getElementById('tagSearchInput').value = tagName;
-    currentTagFilter = tagName;
-    loadPhotos();
-}
-
-// 重置筛选
-function resetPhotoFilter() {
-    currentTagFilter = '';
-    document.getElementById('tagSearchInput').value = '';
-    loadPhotos();
-}
 
 // 显示添加标签模态框
 function showAddTagModal(photoId) {
@@ -976,7 +950,7 @@ function showPhotoDetail(photoId) {
                 
                 // 标签HTML
                 const tagsHtml = tags.length > 0 
-                    ? tags.map(tag => `<span class="photo-tag" onclick="searchByTagName('${tag.name}')">${tag.name}</span>`).join('')
+                    ? tags.map(tag => `<span class="photo-tag">${tag.name}</span>`).join('')
                     : '<span style="color: #999;">无标签</span>';
                 
                 // 根据文件类型生成不同的媒体HTML

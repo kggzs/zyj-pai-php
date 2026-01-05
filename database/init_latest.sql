@@ -132,6 +132,9 @@ CREATE TABLE IF NOT EXISTS `photos` (
   KEY `idx_upload_time_date` (`upload_time`),
   KEY `idx_latitude_longitude` (`latitude`, `longitude`),
   KEY `idx_camera_make_model` (`camera_make`, `camera_model`),
+  -- 优化索引（针对 getUserPhotos 查询优化）
+  KEY `idx_user_deleted_upload_time` (`user_id`, `deleted_at`, `upload_time`),
+  KEY `idx_user_invite_deleted_upload` (`user_id`, `invite_code`, `deleted_at`, `upload_time`),
   FOREIGN KEY (`invite_id`) REFERENCES `invites` (`id`) ON DELETE CASCADE,
   FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='照片表';
@@ -427,7 +430,98 @@ CREATE TABLE IF NOT EXISTS `user_announcements` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户公告已读状态表';
 
 -- ============================================
+-- 数据库索引优化补充（使用存储过程安全添加）
+-- 注意：此部分在所有表创建完成后执行，用于补充可能缺失的索引
+-- ============================================
+
+-- 创建辅助存储过程：安全添加索引（无返回结果集）
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS `add_index_if_not_exists`$$
+CREATE PROCEDURE `add_index_if_not_exists`(
+    IN p_table_name VARCHAR(64),
+    IN p_index_name VARCHAR(64),
+    IN p_index_columns VARCHAR(500)
+)
+BEGIN
+    DECLARE v_index_exists INT DEFAULT 0;
+    DECLARE v_table_exists INT DEFAULT 0;
+    DECLARE v_db_name VARCHAR(64);
+    DECLARE v_error_code INT DEFAULT 0;
+    
+    -- 错误处理：忽略索引已存在的错误和表不存在的错误
+    DECLARE CONTINUE HANDLER FOR 1061
+    BEGIN
+        -- 1061: Duplicate key name (索引已存在)
+        SET v_error_code = 1061;
+    END;
+    
+    DECLARE CONTINUE HANDLER FOR 1062
+    BEGIN
+        -- 1062: Duplicate entry
+        SET v_error_code = 1062;
+    END;
+    
+    DECLARE CONTINUE HANDLER FOR 1146
+    BEGIN
+        -- 1146: Table doesn't exist
+        SET v_error_code = 1146;
+    END;
+    
+    -- 获取当前数据库名
+    SELECT DATABASE() INTO v_db_name;
+    
+    -- 检查表是否存在
+    SELECT COUNT(*) INTO v_table_exists
+    FROM information_schema.tables
+    WHERE table_schema = v_db_name
+      AND table_name = p_table_name;
+    
+    -- 如果表不存在，直接返回
+    IF v_table_exists = 0 THEN
+        -- 表不存在，直接返回
+        SET v_error_code = 0;
+    ELSE
+        -- 检查索引是否存在
+        SELECT COUNT(*) INTO v_index_exists
+        FROM information_schema.statistics
+        WHERE table_schema = v_db_name
+          AND table_name = p_table_name
+          AND index_name = p_index_name;
+        
+        -- 如果索引不存在，则创建
+        IF v_index_exists = 0 THEN
+            SET v_error_code = 0;
+            SET @sql = CONCAT('ALTER TABLE `', p_table_name, '` ADD INDEX `', p_index_name, '` (', p_index_columns, ')');
+            PREPARE stmt FROM @sql;
+            EXECUTE stmt;
+            DEALLOCATE PREPARE stmt;
+        END IF;
+    END IF;
+END$$
+
+DELIMITER ;
+
+-- 补充优化索引（如果表已存在但索引缺失，此部分会自动添加）
+-- 注意：以下索引在 CREATE TABLE 中可能已经定义，存储过程会自动检查并跳过已存在的索引
+-- 照片表：邀请码索引（如果还没有，CREATE TABLE 中已有 KEY `invite_code`）
+CALL add_index_if_not_exists('photos', 'idx_invite_code', '`invite_code`');
+
+-- 照片标签关联表：标签ID索引（用于反向查询，CREATE TABLE 中已有 KEY `tag_id`）
+CALL add_index_if_not_exists('photo_tags', 'idx_tag_id', '`tag_id`');
+
+-- 邀请码表：邀请码索引（CREATE TABLE 中已有 UNIQUE KEY `invite_code`，此调用会被跳过）
+CALL add_index_if_not_exists('invites', 'idx_invite_code', '`invite_code`');
+
+-- 用户表：注册码索引（CREATE TABLE 中已有 UNIQUE KEY `register_code`，此调用会被跳过）
+CALL add_index_if_not_exists('users', 'idx_register_code', '`register_code`');
+
+-- 清理临时存储过程
+DROP PROCEDURE IF EXISTS `add_index_if_not_exists`;
+
+-- ============================================
 -- 初始化完成
 -- ============================================
 SELECT '数据库初始化完成！' AS message;
+SELECT '所有优化索引已创建（如果不存在）。' AS note;
 

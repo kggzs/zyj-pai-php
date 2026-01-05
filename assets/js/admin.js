@@ -985,15 +985,16 @@ function loadPhotos(page = 1) {
                 let html = '';
                 data.data.forEach((user, index) => {
                     const userGroupId = `user-group-${index}`;
-                    const isUserDeleted = user.deleted_at && user.deleted_at !== null;
-                    const deletedBadge = isUserDeleted ? '<span class="deleted-badge" style="margin-left: 10px; padding: 2px 6px; background: #dc3545; color: white; border-radius: 3px; font-size: 11px;">用户已删除</span>' : '';
+                    // 检查用户是否被封禁（status = 0 表示封禁）
+                    const isUserBanned = user.status !== undefined && user.status === 0;
+                    const bannedBadge = isUserBanned ? '<span class="deleted-badge" style="margin-left: 10px; padding: 2px 6px; background: #dc3545; color: white; border-radius: 3px; font-size: 11px;">用户已封禁</span>' : '';
                     
                     html += `
                         <div class="invite-group" style="margin-bottom: 15px; width: 100%;">
                             <div class="invite-group-header" onclick="toggleUserGroupAndLoad('${userGroupId}', ${user.user_id}, '${escapeHtml(user.user_name || '未知用户')}')" style="padding: 12px 20px;">
                                 <span style="display: flex; align-items: center; gap: 12px; flex: 1; width: 100%;">
                                     <span style="font-weight: bold; font-size: 16px; color: #333; flex: 1; min-width: 0;">
-                                        👤 <span style="font-size: 18px;">${escapeHtml(user.user_name || '未知用户')}</span>${deletedBadge}
+                                        👤 <span style="font-size: 18px;">${escapeHtml(user.user_name || '未知用户')}</span>${bannedBadge}
                                         <span style="color: #999; font-weight: normal; font-size: 13px; margin-left: 12px;">
                                             用户ID: <span style="font-family: monospace; color: #5B9BD5;">${user.user_id}</span> | 
                                             照片数量: <span style="color: #5B9BD5; font-weight: 600;">${user.photo_count}</span> 张
@@ -1105,6 +1106,11 @@ function displayUserPhotos(container, photos, userName) {
             
                     const isVideo = fileType === 'video';
                     const durationText = isVideo && videoDuration ? ` ${Math.floor(videoDuration)}秒` : '';
+                    
+                    // 检查照片是否已被删除
+                    const isPhotoDeleted = photo.deleted_at && photo.deleted_at !== null;
+                    const deletedBadge = isPhotoDeleted ? '<div style="position:absolute; top:8px; left:8px; background:#dc3545; color:white; padding:2px 6px; border-radius:3px; font-size:11px; font-weight:bold; z-index:10; white-space:nowrap;">已删除</div>' : '';
+                    
                     let mediaHtml = '';
                     if (thumbnailUrl) {
                         mediaHtml = `
@@ -1112,9 +1118,10 @@ function displayUserPhotos(container, photos, userName) {
                                  style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; display: block;"
                                  onerror="this.onerror=null; this.style.display='none'; this.parentElement.innerHTML='<div style=\'position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#f0f0f0; color:#999;\'>图片加载失败</div>';">
                             ${isVideo ? `<div style="position:absolute; top:8px; right:8px; background:rgba(0,0,0,0.8); color:#fff; padding:4px 8px; border-radius:4px; font-size:12px; font-weight:bold; z-index:10; white-space:nowrap;">🎥${durationText}</div>` : ''}
+                            ${deletedBadge}
                         `;
                     } else {
-                        mediaHtml = `<div style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#f0f0f0; color:#999;">加载中...</div>`;
+                        mediaHtml = `<div style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#f0f0f0; color:#999;">加载中...</div>${deletedBadge}`;
                     }
                     
             html += `
@@ -1218,6 +1225,11 @@ function displayPhotos(photos, title) {
                 
                 const isVideo = fileType === 'video';
                 const durationText = isVideo && videoDuration ? ` ${Math.floor(videoDuration)}秒` : '';
+                
+                // 检查照片是否已被删除
+                const isPhotoDeleted = photo.deleted_at && photo.deleted_at !== null;
+                const deletedBadge = isPhotoDeleted ? '<div style="position:absolute; top:8px; left:8px; background:#dc3545; color:white; padding:2px 6px; border-radius:3px; font-size:11px; font-weight:bold; z-index:10; white-space:nowrap;">已删除</div>' : '';
+                
                 let mediaHtml = '';
                 if (thumbnailUrl) {
                     mediaHtml = `
@@ -1225,9 +1237,10 @@ function displayPhotos(photos, title) {
                              style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; display: block;"
                              onerror="this.onerror=null; this.style.display='none'; this.parentElement.innerHTML='<div style=\'position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#f0f0f0; color:#999;\'>图片加载失败</div>';">
                         ${isVideo ? `<div style="position:absolute; top:8px; right:8px; background:rgba(0,0,0,0.8); color:#fff; padding:4px 8px; border-radius:4px; font-size:12px; font-weight:bold; z-index:10; white-space:nowrap;">🎥${durationText}</div>` : ''}
+                        ${deletedBadge}
                     `;
                 } else {
-                    mediaHtml = `<div style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#f0f0f0; color:#999;">加载中...</div>`;
+                    mediaHtml = `<div style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#f0f0f0; color:#999;">加载中...</div>${deletedBadge}`;
                 }
                 
                 html += `
@@ -1363,9 +1376,9 @@ function displayPhotoDetail(photo) {
     const tags = photo.tags || [];
     const videoDuration = photo.video_duration || null;
     
-    // 检查用户是否已删除
-    const isUserDeleted = photo.deleted_at && photo.deleted_at !== null;
-    const deletedBadge = isUserDeleted ? '<span class="status-badge status-banned" style="margin-left: 10px;">用户已删除</span>' : '';
+    // 检查照片是否已被删除
+    const isPhotoDeleted = photo.deleted_at && photo.deleted_at !== null;
+    const deletedBadge = isPhotoDeleted ? '<span class="deleted-badge" style="margin-left: 10px; padding: 2px 6px; background: #dc3545; color: white; border-radius: 3px; font-size: 11px;">已删除</span>' : '';
     
     let html = `
         <div class="modal-body" style="max-height: 80vh; overflow-y: auto;">
@@ -1374,13 +1387,15 @@ function displayPhotoDetail(photo) {
                     <div style="position: relative; width: 100%; padding-bottom: 100%; background: #f0f0f0; border-radius: 8px; overflow: hidden;">
                         ${isVideo ? 
                             `<img src="${thumbnailUrl}" alt="视频缩略图" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
-                             <div style="position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.8); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 12px;">🎥 ${videoDuration ? Math.floor(videoDuration) + '秒' : ''}</div>` :
-                            `<img src="${thumbnailUrl}" alt="照片" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; background: #f0f0f0;">`
+                             <div style="position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.8); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 12px;">🎥 ${videoDuration ? Math.floor(videoDuration) + '秒' : ''}</div>
+                             ${isPhotoDeleted ? '<div style="position: absolute; top: 8px; left: 8px; background: #dc3545; color: white; padding: 2px 6px; border-radius: 3px; font-size: 11px; font-weight: bold; z-index: 10;">已删除</div>' : ''}` :
+                            `<img src="${thumbnailUrl}" alt="照片" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; background: #f0f0f0;">
+                             ${isPhotoDeleted ? '<div style="position: absolute; top: 8px; left: 8px; background: #dc3545; color: white; padding: 2px 6px; border-radius: 3px; font-size: 11px; font-weight: bold; z-index: 10;">已删除</div>' : ''}`
                         }
                     </div>
                 </div>
                 <div style="flex: 1;">
-                    <h3 style="margin-top: 0; margin-bottom: 15px;">${isVideo ? '🎥 录像详情' : '📷 照片详情'}</h3>
+                    <h3 style="margin-top: 0; margin-bottom: 15px;">${isVideo ? '🎥 录像详情' : '📷 照片详情'}${deletedBadge}</h3>
                     
                     <table class="info-table" style="width: 100%; border-collapse: collapse;">
                         <tr>
@@ -1389,7 +1404,7 @@ function displayPhotoDetail(photo) {
                         </tr>
                         <tr>
                             <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: 600; color: #5B9BD5;">用户</td>
-                            <td style="padding: 8px; border-bottom: 1px solid #eee;">${userName}${deletedBadge}</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #eee;">${userName}</td>
                         </tr>
                         <tr>
                             <td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: 600; color: #5B9BD5;">文件类型</td>

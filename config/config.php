@@ -90,5 +90,11 @@ return [
         'allow_private_ip' => true,
         // 是否允许保留IP（如127.0.0.1），如果为false，则过滤这些IP
         'allow_reserved_ip' => true
+    ],
+    
+    // 日志配置
+    'logging' => [
+        'enabled' => true, // 是否启用日志
+        'level' => 'INFO', // 日志级别：DEBUG, INFO, WARNING, ERROR（生产环境建议使用INFO）
     ]
 ];

@@ -107,8 +107,14 @@ class Photo {
     public function getUserPhotos($userId, $page = 1, $pageSize = 20, $inviteCode = null, $tagName = null) {
         $offset = ($page - 1) * $pageSize;
         
-        // 记录调试信息
-        error_log('Photo::getUserPhotos: 查询参数, userId: ' . $userId . ', page: ' . $page . ', pageSize: ' . $pageSize . ', inviteCode: ' . ($inviteCode ?? 'NULL') . ', tagName: ' . ($tagName ?? 'NULL'));
+        // 使用Logger记录调试信息（仅在DEBUG级别时记录）
+        Logger::debug('Photo::getUserPhotos: 查询参数', [
+            'userId' => $userId,
+            'page' => $page,
+            'pageSize' => $pageSize,
+            'inviteCode' => $inviteCode,
+            'tagName' => $tagName
+        ]);
         
         $where = "p.user_id = ? AND p.deleted_at IS NULL";
         $params = [$userId];
@@ -119,7 +125,7 @@ class Photo {
             $params[] = $inviteCode;
         }
         
-        // 按标签筛选
+        // 按标签筛选（使用EXISTS子查询，性能更好）
         if ($tagName) {
             $where .= " AND EXISTS (
                 SELECT 1 FROM photo_tags pt 
@@ -130,37 +136,48 @@ class Photo {
             $params[] = $userId;
         }
         
-        // 按上传时间倒序排序（新照片优先），然后按邀请码标签排序
-        // 注意：使用 p.id 而不是 DISTINCT p.*，避免因 LEFT JOIN 导致的重复记录问题
-        $sql = "SELECT p.*, 
-                       COALESCE(i.label, '') as invite_label
-                FROM photos p
-                LEFT JOIN invites i ON p.invite_code = i.invite_code
-                WHERE {$where} 
-                ORDER BY 
-                    p.upload_time DESC,
-                    CASE WHEN i.label IS NOT NULL AND i.label != '' THEN 0 ELSE 1 END,
-                    i.label ASC,
-                    p.id DESC
-                LIMIT ? OFFSET ?";
+        // 优化查询：使用子查询获取邀请码标签，避免LEFT JOIN导致的性能问题
+        // 如果不需要邀请码标签，可以直接查询photos表
+        $needInviteLabel = true; // 可以根据实际需求调整
+        
+        if ($needInviteLabel) {
+            // 使用子查询获取邀请码标签（性能优于LEFT JOIN）
+            $sql = "SELECT p.*, 
+                           COALESCE((SELECT i.label FROM invites i WHERE i.invite_code = p.invite_code LIMIT 1), '') as invite_label
+                    FROM photos p
+                    WHERE {$where} 
+                    ORDER BY 
+                        p.upload_time DESC,
+                        p.id DESC
+                    LIMIT ? OFFSET ?";
+        } else {
+            // 不需要邀请码标签时，直接查询photos表
+            $sql = "SELECT p.*, '' as invite_label
+                    FROM photos p
+                    WHERE {$where} 
+                    ORDER BY 
+                        p.upload_time DESC,
+                        p.id DESC
+                    LIMIT ? OFFSET ?";
+        }
+        
         $params[] = $pageSize;
         $params[] = $offset;
         
-        error_log('Photo::getUserPhotos: 执行SQL: ' . $sql);
-        error_log('Photo::getUserPhotos: SQL参数: ' . json_encode($params));
+        Logger::debug('Photo::getUserPhotos: 执行SQL', ['sql' => $sql, 'params' => $params]);
         
         $photos = $this->db->fetchAll($sql, $params);
         
-        error_log('Photo::getUserPhotos: 查询到 ' . count($photos) . ' 张照片');
+        Logger::debug('Photo::getUserPhotos: 查询结果', ['count' => count($photos)]);
         
-        // 获取总数（不需要 DISTINCT，因为每个照片只有一条记录）
+        // 获取总数
         $countSql = "SELECT COUNT(p.id) as total 
                      FROM photos p
                      WHERE {$where}";
         $countParams = array_slice($params, 0, -2); // 移除 LIMIT 和 OFFSET 参数
         $total = $this->db->fetchOne($countSql, $countParams);
         
-        error_log('Photo::getUserPhotos: 照片总数: ' . ($total['total'] ?? 0));
+        Logger::debug('Photo::getUserPhotos: 照片总数', ['total' => $total['total'] ?? 0]);
         
         return [
             'list' => $photos,

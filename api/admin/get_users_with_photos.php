@@ -31,20 +31,32 @@ if (!$adminModel->isLoggedIn()) {
 try {
     $db = Database::getInstance();
     
-    // 获取有照片的用户列表（包括已删除的用户，因为管理员需要看到所有照片）
+    // 获取有照片的用户列表（包括已封禁的用户，因为管理员需要看到所有照片）
     $sql = "SELECT DISTINCT 
                 u.id as user_id,
                 u.username as user_name,
                 u.nickname,
-                u.status,
-                COUNT(p.id) as photo_count,
-                MAX(p.deleted_at) as deleted_at
+                u.status
             FROM photos p
             INNER JOIN users u ON p.user_id = u.id
-            GROUP BY u.id, u.username, u.nickname, u.status
-            ORDER BY photo_count DESC, u.username ASC";
+            GROUP BY u.id, u.username, u.nickname, u.status";
+    
+    // 获取每个用户的照片数量（包括已删除的照片）
+    $countSql = "SELECT 
+                    u.id as user_id,
+                    COUNT(p.id) as photo_count
+                 FROM photos p
+                 INNER JOIN users u ON p.user_id = u.id
+                 GROUP BY u.id";
     
     $users = $db->fetchAll($sql);
+    $photoCounts = $db->fetchAll($countSql);
+    
+    // 将照片数量转换为以user_id为键的数组
+    $photoCountMap = [];
+    foreach ($photoCounts as $count) {
+        $photoCountMap[$count['user_id']] = (int)$count['photo_count'];
+    }
     
     // 格式化数据
     $result = [];
@@ -52,10 +64,18 @@ try {
         $result[] = [
             'user_id' => $user['user_id'],
             'user_name' => $user['user_name'] ?: ($user['nickname'] ?: '未知用户'),
-            'photo_count' => (int)$user['photo_count'],
-            'deleted_at' => $user['deleted_at']
+            'photo_count' => $photoCountMap[$user['user_id']] ?? 0,
+            'status' => (int)$user['status'] // 用户状态：1=正常，0=封禁
         ];
     }
+    
+    // 按照片数量降序排序
+    usort($result, function($a, $b) {
+        if ($a['photo_count'] == $b['photo_count']) {
+            return strcmp($a['user_name'], $b['user_name']);
+        }
+        return $b['photo_count'] - $a['photo_count'];
+    });
     
     echo json_encode(['success' => true, 'data' => $result], JSON_UNESCAPED_UNICODE);
     

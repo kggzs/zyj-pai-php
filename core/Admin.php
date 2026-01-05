@@ -62,48 +62,49 @@ class Admin {
     }
     
     /**
+     * 构建用户搜索条件
+     * @param string $search 搜索关键词
+     * @return array ['where' => string, 'params' => array]
+     */
+    private function buildUserSearchCondition($search) {
+        $where = "1=1";
+        $params = [];
+        
+        if (empty($search)) {
+            return ['where' => $where, 'params' => $params];
+        }
+        
+        // 支持搜索用户名、昵称、邮箱、IP、注册码（6位）、拍摄链接码（8位）
+        $searchLen = strlen($search);
+        $searchParam = "%{$search}%";
+        
+        if ($searchLen === 6) {
+            // 6位：搜索注册码（精确匹配）和其他字段（模糊匹配）
+            $where .= " AND (username LIKE ? OR nickname LIKE ? OR email LIKE ? OR register_ip LIKE ? OR register_code = ?)";
+            $params = [$searchParam, $searchParam, $searchParam, $searchParam, $search];
+        } elseif ($searchLen === 8) {
+            // 8位：搜索拍摄链接码（通过子查询查找拥有该拍摄链接码的用户）和其他字段（模糊匹配）
+            $where .= " AND (username LIKE ? OR nickname LIKE ? OR email LIKE ? OR register_ip LIKE ? OR id IN (SELECT user_id FROM invites WHERE invite_code = ?))";
+            $params = [$searchParam, $searchParam, $searchParam, $searchParam, $search];
+        } else {
+            // 其他长度：只搜索用户名、昵称、邮箱、IP（模糊匹配）
+            $where .= " AND (username LIKE ? OR nickname LIKE ? OR email LIKE ? OR register_ip LIKE ?)";
+            $params = [$searchParam, $searchParam, $searchParam, $searchParam];
+        }
+        
+        return ['where' => $where, 'params' => $params];
+    }
+    
+    /**
      * 获取用户列表（分页）
      */
     public function getUserList($page = 1, $pageSize = 20, $search = '') {
         $offset = ($page - 1) * $pageSize;
         
-        $where = "1=1";
-        $params = [];
-        
-        if (!empty($search)) {
-            // 支持搜索用户名、昵称、邮箱、IP、注册码（6位）、拍摄链接码（8位）
-            $searchLen = strlen($search);
-            if ($searchLen === 6 || $searchLen === 8) {
-                // 如果是6位或8位，可能是注册码或拍摄链接码
-                // 6位：搜索注册码
-                // 8位：搜索拍摄链接码（通过invites表关联）
-                if ($searchLen === 6) {
-                    $where .= " AND (username LIKE ? OR nickname LIKE ? OR email LIKE ? OR register_ip LIKE ? OR register_code = ?)";
-                    $searchParam = "%{$search}%";
-                    $params[] = $searchParam;
-                    $params[] = $searchParam;
-                    $params[] = $searchParam;
-                    $params[] = $searchParam;
-                    $params[] = $search; // 精确匹配注册码
-                } else {
-                    // 8位：搜索拍摄链接码（通过子查询查找拥有该拍摄链接码的用户）
-                    $where .= " AND (username LIKE ? OR nickname LIKE ? OR email LIKE ? OR register_ip LIKE ? OR id IN (SELECT user_id FROM invites WHERE invite_code = ?))";
-                    $searchParam = "%{$search}%";
-                    $params[] = $searchParam;
-                    $params[] = $searchParam;
-                    $params[] = $searchParam;
-                    $params[] = $searchParam;
-                    $params[] = $search; // 精确匹配拍摄链接码
-                }
-            } else {
-                $where .= " AND (username LIKE ? OR nickname LIKE ? OR email LIKE ? OR register_ip LIKE ?)";
-                $searchParam = "%{$search}%";
-                $params[] = $searchParam;
-                $params[] = $searchParam;
-                $params[] = $searchParam;
-                $params[] = $searchParam;
-            }
-        }
+        // 构建搜索条件（复用逻辑，避免重复）
+        $searchCondition = $this->buildUserSearchCondition($search);
+        $where = $searchCondition['where'];
+        $params = $searchCondition['params'];
         
         $sql = "SELECT id, username, nickname, email, email_verified, email_notify_photo, 
                        register_ip, register_ua, register_time, 
@@ -116,34 +117,9 @@ class Admin {
         
         $users = $this->db->fetchAll($sql, $params);
         
+        // 获取总数（复用搜索条件）
         $countSql = "SELECT COUNT(*) as total FROM users WHERE {$where}";
-        $countParams = [];
-        if (!empty($search)) {
-            $searchLen = strlen($search);
-            if ($searchLen === 6 || $searchLen === 8) {
-                if ($searchLen === 6) {
-                    $searchParam = "%{$search}%";
-                    $countParams[] = $searchParam;
-                    $countParams[] = $searchParam;
-                    $countParams[] = $searchParam;
-                    $countParams[] = $searchParam;
-                    $countParams[] = $search; // 精确匹配注册码
-                } else {
-                    $searchParam = "%{$search}%";
-                    $countParams[] = $searchParam;
-                    $countParams[] = $searchParam;
-                    $countParams[] = $searchParam;
-                    $countParams[] = $searchParam;
-                    $countParams[] = $search; // 精确匹配拍摄链接码
-                }
-            } else {
-                $searchParam = "%{$search}%";
-                $countParams[] = $searchParam;
-                $countParams[] = $searchParam;
-                $countParams[] = $searchParam;
-                $countParams[] = $searchParam;
-            }
-        }
+        $countParams = $searchCondition['params']; // 复用搜索参数，不需要LIMIT和OFFSET
         $total = $this->db->fetchOne($countSql, $countParams);
         
         return [

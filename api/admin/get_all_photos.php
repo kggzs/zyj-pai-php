@@ -96,11 +96,11 @@ try {
     }
     
     // 记录调试信息
-    error_log('get_all_photos.php: 查询照片列表, page: ' . $page . ', pageSize: ' . $pageSize . ', userId: ' . ($userId ?? 'NULL') . ', username: ' . ($username ?? 'NULL') . ', inviteCode: ' . ($inviteCode ?? 'NULL'));
+    Logger::debug('get_all_photos.php: 查询照片列表, page: ' . $page . ', pageSize: ' . $pageSize . ', userId: ' . ($userId ?? 'NULL') . ', username: ' . ($username ?? 'NULL') . ', inviteCode: ' . ($inviteCode ?? 'NULL'));
     
     $result = $adminModel->getAllPhotos($page, $pageSize, $userId, $username, $inviteCode);
     
-    error_log('get_all_photos.php: 查询结果, 照片数量: ' . count($result['list']) . ', 总数: ' . $result['total']);
+    Logger::debug('get_all_photos.php: 查询结果, 照片数量: ' . count($result['list']) . ', 总数: ' . $result['total']);
     
     $config = require __DIR__ . '/../../config/config.php';
     
@@ -147,7 +147,7 @@ try {
     echo json_encode(['success' => true, 'data' => $result]);
     
 } catch (Exception $e) {
-    error_log('获取照片列表错误：' . $e->getMessage());
+    Logger::debug('获取照片列表错误：' . $e->getMessage());
     echo json_encode(['success' => false, 'message' => '获取失败']);
 }
 

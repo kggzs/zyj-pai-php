@@ -95,6 +95,32 @@ return [
     // 日志配置
     'logging' => [
         'enabled' => true, // 是否启用日志
-        'level' => 'INFO', // 日志级别：DEBUG, INFO, WARNING, ERROR（生产环境建议使用INFO）
+        'level' => 'DEBUG', // 日志级别：DEBUG, INFO, WARNING, ERROR（生产环境建议使用INFO）
+    ],
+    
+    // 安全响应头配置
+    'security_headers' => [
+        'enabled' => true, // 是否启用安全响应头
+        'csp' => true, // 内容安全策略（CSP）
+        'csp_policy' => "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self';", // CSP策略（可根据实际需求调整）
+        'x_content_type_options' => true, // X-Content-Type-Options: nosniff
+        'x_frame_options' => true, // X-Frame-Options
+        'x_frame_options_value' => 'DENY', // X-Frame-Options值：DENY（禁止）或 SAMEORIGIN（同源允许）
+        'x_xss_protection' => true, // X-XSS-Protection
+        'strict_transport_security' => true, // Strict-Transport-Security (HSTS)
+        'hsts_max_age' => 31536000, // HSTS最大年龄（秒），默认1年
+        'hsts_include_subdomains' => true, // HSTS是否包含子域名
+        'referrer_policy' => 'strict-origin-when-cross-origin', // Referrer-Policy
+        'permissions_policy' => "geolocation=(), microphone=(), camera=()", // Permissions-Policy
+    ],
+    
+    // 密码强度配置
+    'password_strength' => [
+        'min_length' => 8, // 最小长度（至少8位）
+        'max_length' => 64, // 最大长度
+        'require_letter' => true, // 必须包含字母
+        'require_number' => true, // 必须包含数字
+        'require_special_char' => false, // 是否必须包含特殊字符（可选，默认false）
+        'check_username' => false, // 是否检查密码中不能包含用户名（需要在使用时传入username）
     ]
 ];

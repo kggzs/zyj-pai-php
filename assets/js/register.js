@@ -295,3 +295,111 @@ document.addEventListener('DOMContentLoaded', function() {
 // 页面加载时获取配置
 loadRegisterConfig();
 
+// 更新密码要求显示
+function updateRequirementsDisplay(requirements) {
+    const requirementsList = document.getElementById('requirementsList');
+    if (!requirementsList) return;
+    
+    requirementsList.innerHTML = requirements.map(req => {
+        const icon = req.met ? '✓' : '○';
+        const color = req.met ? '#00C851' : '#999';
+        return `<div style="color: ${color}; margin-bottom: 3px;">
+            <span style="margin-right: 5px; font-weight: bold;">${icon}</span>
+            ${req.text}
+        </div>`;
+    }).join('');
+}
+
+// 加载密码要求
+async function loadPasswordRequirements() {
+    try {
+        const response = await fetch('api/get_password_strength.php?password=');
+        const data = await response.json();
+        if (data.success && data.requirements) {
+            updateRequirementsDisplay(data.requirements);
+        }
+    } catch (err) {
+        console.error('加载密码要求失败:', err);
+    }
+}
+
+// 检查密码强度
+async function checkPasswordStrength(password) {
+    const strengthDiv = document.getElementById('passwordStrength');
+    const requirementsList = document.getElementById('requirementsList');
+    
+    if (!password) {
+        if (strengthDiv) {
+            strengthDiv.style.display = 'none';
+        }
+        // 显示初始要求（未满足状态）
+        try {
+            const response = await fetch('api/get_password_strength.php?password=');
+            const data = await response.json();
+            if (data.success && data.requirements) {
+                updateRequirementsDisplay(data.requirements);
+            }
+        } catch (err) {
+            console.error('加载密码要求失败:', err);
+        }
+        return;
+    }
+    
+    try {
+        const formData = new FormData();
+        formData.append('password', password);
+        
+        const response = await fetch('api/get_password_strength.php', {
+            method: 'POST',
+            body: formData
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            // 更新要求显示
+            if (data.requirements) {
+                updateRequirementsDisplay(data.requirements);
+            }
+            
+            // 更新强度显示
+            if (strengthDiv) {
+                const strengthBarFill = document.getElementById('strengthBarFill');
+                const strengthText = document.getElementById('strengthText');
+                
+                if (strengthBarFill && strengthText) {
+                    strengthDiv.style.display = 'block';
+                    
+                    const level = data.level || 0;
+                    const text = data.text || '未知';
+                    
+                    // 设置进度条
+                    const percentages = [0, 25, 50, 75, 100];
+                    const colors = ['#ff4444', '#ff8800', '#ffbb33', '#00C851', '#007E33'];
+                    const percentage = percentages[level] || 0;
+                    const color = colors[level] || '#999';
+                    
+                    strengthBarFill.style.width = percentage + '%';
+                    strengthBarFill.style.background = color;
+                    strengthText.textContent = text;
+                    strengthText.style.color = color;
+                }
+            }
+        }
+    } catch (err) {
+        console.error('检查密码强度失败:', err);
+    }
+}
+
+// 监听密码输入
+document.addEventListener('DOMContentLoaded', function() {
+    const passwordInput = document.getElementById('passwordInput');
+    if (passwordInput) {
+        passwordInput.addEventListener('input', function() {
+            checkPasswordStrength(this.value);
+        });
+        
+        // 加载密码要求
+        loadPasswordRequirements();
+    }
+});
+

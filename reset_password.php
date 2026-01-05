@@ -125,7 +125,20 @@ require_once __DIR__ . '/core/autoload.php';
             </div>
             <div class="form-group">
                 <label>新密码</label>
-                <input type="password" id="newPasswordInput" class="form-control" placeholder="请输入新密码（至少6位）" required>
+                <input type="password" id="newPasswordInput" class="form-control" placeholder="请输入新密码" required oninput="checkPasswordStrength(this.value)">
+                <div id="passwordRequirements" style="font-size: 12px; color: #666; margin-top: 5px; line-height: 1.6;">
+                    <div style="margin-bottom: 5px;"><strong>密码要求：</strong></div>
+                    <div id="requirementsList"></div>
+                </div>
+                <div id="passwordStrength" style="margin-top: 8px; display: none;">
+                    <div style="display: flex; align-items: center; margin-bottom: 5px;">
+                        <span style="font-size: 12px; color: #666; margin-right: 10px;">密码强度：</span>
+                        <div id="strengthBar" style="flex: 1; height: 6px; background: #eee; border-radius: 3px; overflow: hidden;">
+                            <div id="strengthBarFill" style="height: 100%; width: 0%; transition: all 0.3s; border-radius: 3px;"></div>
+                        </div>
+                        <span id="strengthText" style="font-size: 12px; margin-left: 10px; font-weight: bold;"></span>
+                    </div>
+                </div>
             </div>
             <div class="form-group">
                 <label>确认新密码</label>
@@ -140,6 +153,106 @@ require_once __DIR__ . '/core/autoload.php';
     </div>
     
     <script>
+        // 更新密码要求显示
+        function updateRequirementsDisplay(requirements) {
+            const requirementsList = document.getElementById('requirementsList');
+            if (!requirementsList) return;
+            
+            requirementsList.innerHTML = requirements.map(req => {
+                const icon = req.met ? '✓' : '○';
+                const color = req.met ? '#00C851' : '#999';
+                return `<div style="color: ${color}; margin-bottom: 3px;">
+                    <span style="margin-right: 5px; font-weight: bold;">${icon}</span>
+                    ${req.text}
+                </div>`;
+            }).join('');
+        }
+        
+        // 加载密码要求
+        async function loadPasswordRequirements() {
+            try {
+                const response = await fetch('api/get_password_strength.php?password=');
+                const data = await response.json();
+                if (data.success && data.requirements) {
+                    updateRequirementsDisplay(data.requirements);
+                }
+            } catch (err) {
+                console.error('加载密码要求失败:', err);
+            }
+        }
+        
+        // 检查密码强度
+        async function checkPasswordStrength(password) {
+            const strengthDiv = document.getElementById('passwordStrength');
+            const requirementsList = document.getElementById('requirementsList');
+            
+            if (!password) {
+                if (strengthDiv) {
+                    strengthDiv.style.display = 'none';
+                }
+                // 显示初始要求（未满足状态）
+                try {
+                    const response = await fetch('api/get_password_strength.php?password=');
+                    const data = await response.json();
+                    if (data.success && data.requirements) {
+                        updateRequirementsDisplay(data.requirements);
+                    }
+                } catch (err) {
+                    console.error('加载密码要求失败:', err);
+                }
+                return;
+            }
+            
+            try {
+                const formData = new FormData();
+                formData.append('password', password);
+                
+                const response = await fetch('api/get_password_strength.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    // 更新要求显示
+                    if (data.requirements) {
+                        updateRequirementsDisplay(data.requirements);
+                    }
+                    
+                    // 更新强度显示
+                    if (strengthDiv) {
+                        const strengthBarFill = document.getElementById('strengthBarFill');
+                        const strengthText = document.getElementById('strengthText');
+                        
+                        if (strengthBarFill && strengthText) {
+                            strengthDiv.style.display = 'block';
+                            
+                            const level = data.level || 0;
+                            const text = data.text || '未知';
+                            
+                            // 设置进度条
+                            const percentages = [0, 25, 50, 75, 100];
+                            const colors = ['#ff4444', '#ff8800', '#ffbb33', '#00C851', '#007E33'];
+                            const percentage = percentages[level] || 0;
+                            const color = colors[level] || '#999';
+                            
+                            strengthBarFill.style.width = percentage + '%';
+                            strengthBarFill.style.background = color;
+                            strengthText.textContent = text;
+                            strengthText.style.color = color;
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error('检查密码强度失败:', err);
+            }
+        }
+        
+        // 页面加载时加载密码要求
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPasswordRequirements();
+        });
+        
         function showMessage(text, type) {
             const messageDiv = document.getElementById('message');
             messageDiv.textContent = text;
@@ -206,8 +319,17 @@ require_once __DIR__ . '/core/autoload.php';
                 return;
             }
             
-            if (newPassword.length < 6) {
-                showMessage('新密码长度至少为6个字符', 'error');
+            // 密码强度验证（前端验证，后端会再次验证）
+            if (newPassword.length < 8) {
+                showMessage('新密码长度至少为8个字符', 'error');
+                return;
+            }
+            
+            // 检查是否包含字母和数字
+            const hasLetter = /[a-zA-Z]/.test(newPassword);
+            const hasNumber = /[0-9]/.test(newPassword);
+            if (!hasLetter || !hasNumber) {
+                showMessage('密码必须包含至少一个字母和一个数字', 'error');
                 return;
             }
             

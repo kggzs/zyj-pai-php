@@ -74,7 +74,7 @@ try {
     ]);
     
 } catch (Exception $e) {
-    error_log('检查未过期邀请链接错误：' . $e->getMessage());
+    Logger::error('检查未过期邀请链接错误：' . $e->getMessage());
     echo json_encode(['success' => false, 'message' => '检查失败']);
 }
 

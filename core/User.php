@@ -58,8 +58,9 @@ class User {
         }
         
         // 验证密码强度
-        if (empty($password) || mb_strlen($password) < 6) {
-            return ['success' => false, 'message' => '密码长度至少为6个字符'];
+        $passwordValidation = Security::validatePasswordStrength($password);
+        if (!$passwordValidation['valid']) {
+            return ['success' => false, 'message' => $passwordValidation['message']];
         }
         
         // 验证注册码或拍摄链接码格式（如果提供）
@@ -110,8 +111,8 @@ class User {
                 $this->handleInviteReward($inviteCode, $userId, null);
             } catch (Exception $e) {
                 // 积分奖励失败不影响注册，只记录错误日志
-                error_log('处理注册奖励失败：' . $e->getMessage());
-                error_log('堆栈：' . $e->getTraceAsString());
+                Logger::error('处理注册奖励失败：' . $e->getMessage());
+                Logger::error('堆栈：' . $e->getTraceAsString());
             }
         }
         
@@ -120,7 +121,7 @@ class User {
             $sendResult = $this->sendEmailVerificationCode($userId, $email, 'email');
             // 如果发送失败，记录错误但不阻止注册（用户可以通过重新发送验证码）
             if (!$sendResult['success']) {
-                error_log('注册时发送验证码失败：' . $sendResult['message']);
+                Logger::error('注册时发送验证码失败：' . $sendResult['message']);
             }
         }
         
@@ -229,7 +230,7 @@ class User {
                     $_SERVER['REQUEST_URI'] ?? null
                 );
             } catch (Exception $e) {
-                error_log('记录异常行为失败：' . $e->getMessage());
+                Logger::error('记录异常行为失败：' . $e->getMessage());
             }
             
             if (!empty($user['email']) && $user['email_verified'] == 1) {
@@ -237,7 +238,7 @@ class User {
                     $email = new Email();
                     $email->sendUnusualLoginAlert($user['email'], $user['username'] ?? $user['nickname'] ?? $user['username'], $loginIp);
                 } catch (Exception $e) {
-                    error_log('发送异常登录提醒失败：' . $e->getMessage());
+                    Logger::error('发送异常登录提醒失败：' . $e->getMessage());
                 }
             }
         }
@@ -291,7 +292,7 @@ class User {
                     $isRegisterCode = false; // 8位=拍摄链接码
                 } else {
                     // 长度不符合，无法判断，记录错误并返回
-                    error_log("邀请码长度错误：code={$code}, length={$codeLength}");
+                    Logger::warning("邀请码长度错误：code={$code}, length={$codeLength}");
                     return;
                 }
             }
@@ -301,7 +302,7 @@ class User {
                 $registerUser = $this->getUserByRegisterCode($code);
                 if (!$registerUser) {
                     // 注册码无效，不影响注册流程
-                    error_log("注册码无效：code={$code}, new_user_id={$newUserId}");
+                    Logger::warning("注册码无效：code={$code}, new_user_id={$newUserId}");
                     return;
                 }
                 
@@ -318,13 +319,13 @@ class User {
                 );
                 
                 if ($newUserExisting || $inviterExisting) {
-                    error_log("注册码奖励已发放过：register_code={$code}, new_user_id={$newUserId}");
+                    Logger::info("注册码奖励已发放过：register_code={$code}, new_user_id={$newUserId}");
                     return; // 已经奖励过，避免重复
                 }
                 
                 $inviterId = $registerUser['id'];
                 $inviteCode = $code; // 使用注册码作为记录
-                error_log("开始处理注册码奖励：code={$code}, inviter_id={$inviterId}, new_user_id={$newUserId}");
+                Logger::debug("开始处理注册码奖励：code={$code}, inviter_id={$inviterId}, new_user_id={$newUserId}");
             } else {
                 // 处理拍摄链接码（向后兼容）
                 $invite = $this->db->fetchOne(
@@ -350,7 +351,7 @@ class User {
                 );
                 
                 if ($newUserExisting || $inviterExisting) {
-                    error_log("邀请奖励已发放过：invite_code={$code}, new_user_id={$newUserId}");
+                    Logger::info("邀请奖励已发放过：invite_code={$code}, new_user_id={$newUserId}");
                     return; // 已经奖励过，避免重复
                 }
                 
@@ -391,9 +392,9 @@ class User {
                          VALUES (?, 'invite_reward', ?, ?, ?, ?, NOW())",
                         [$newUserId, $newUserPoints, $inviteCode, $newUserId, $remark]
                     );
-                    error_log("新用户积分发放成功：user_id={$newUserId}, points={$newUserPoints}, code={$inviteCode}");
+                    Logger::info("新用户积分发放成功：user_id={$newUserId}, points={$newUserPoints}, code={$inviteCode}");
                 } catch (Exception $e) {
-                    error_log("新用户积分发放失败：user_id={$newUserId}, points={$newUserPoints}, error=" . $e->getMessage());
+                    Logger::error("新用户积分发放失败：user_id={$newUserId}, points={$newUserPoints}, error=" . $e->getMessage());
                 }
             }
             
@@ -407,7 +408,7 @@ class User {
                     );
                     
                     if ($updateResult === false) {
-                        error_log("更新邀请人积分失败：user_id={$inviterId}, points={$inviterPoints}");
+                        Logger::error("更新邀请人积分失败：user_id={$inviterId}, points={$inviterPoints}");
                         return;
                     }
                     
@@ -424,7 +425,7 @@ class User {
                         );
                         
                         if ($existingInviterLog) {
-                            error_log("邀请人积分记录已存在：user_id={$inviterId}, code={$inviteCode}, new_user_id={$newUserId}");
+                            Logger::info("邀请人积分记录已存在：user_id={$inviterId}, code={$inviteCode}, new_user_id={$newUserId}");
                         } else {
                             // 使用 invite_code + '_inviter' 作为邀请人记录的 invite_code，避免与新用户记录的唯一索引冲突
                             $inviterInviteCode = $inviteCode . '_inviter';
@@ -435,24 +436,24 @@ class User {
                             );
                             
                             if ($insertResult > 0) {
-                                error_log("邀请人积分发放成功：user_id={$inviterId}, points={$inviterPoints}, code={$inviteCode}, new_user_id={$newUserId}");
+                                Logger::info("邀请人积分发放成功：user_id={$inviterId}, points={$inviterPoints}, code={$inviteCode}, new_user_id={$newUserId}");
                             } else {
-                                error_log("邀请人积分记录插入失败（返回0）：user_id={$inviterId}, code={$inviteCode}, new_user_id={$newUserId}");
+                                Logger::error("邀请人积分记录插入失败（返回0）：user_id={$inviterId}, code={$inviteCode}, new_user_id={$newUserId}");
                             }
                         }
                     } catch (PDOException $e) {
-                        error_log("邀请人积分记录插入异常：user_id={$inviterId}, code={$inviteCode}, new_user_id={$newUserId}, error=" . $e->getMessage());
+                        Logger::error("邀请人积分记录插入异常：user_id={$inviterId}, code={$inviteCode}, new_user_id={$newUserId}, error=" . $e->getMessage());
                         // 不抛出异常，避免影响积分更新
                     }
                 } catch (Exception $e) {
-                    error_log("邀请人积分发放失败：user_id={$inviterId}, points={$inviterPoints}, code={$inviteCode}, new_user_id={$newUserId}, error=" . $e->getMessage());
-                    error_log("堆栈：" . $e->getTraceAsString());
+                    Logger::error("邀请人积分发放失败：user_id={$inviterId}, points={$inviterPoints}, code={$inviteCode}, new_user_id={$newUserId}, error=" . $e->getMessage());
+                    Logger::error("堆栈：" . $e->getTraceAsString());
                 }
             }
         } catch (Exception $e) {
             // 捕获所有异常，记录日志但不抛出，确保不影响注册流程
-            error_log('处理邀请奖励异常：' . $e->getMessage());
-            error_log('堆栈：' . $e->getTraceAsString());
+            Logger::error('处理邀请奖励异常：' . $e->getMessage());
+            Logger::error('堆栈：' . $e->getTraceAsString());
         }
     }
     
@@ -538,8 +539,9 @@ class User {
      */
     public function changePassword($userId, $oldPassword, $newPassword) {
         // 验证新密码强度
-        if (empty($newPassword) || mb_strlen($newPassword) < 6) {
-            return ['success' => false, 'message' => '新密码长度至少为6个字符'];
+        $passwordValidation = Security::validatePasswordStrength($newPassword);
+        if (!$passwordValidation['valid']) {
+            return ['success' => false, 'message' => $passwordValidation['message']];
         }
         
         // 获取用户信息（包括邮箱相关字段）
@@ -575,7 +577,7 @@ class User {
                 $email->sendPasswordChangeNotification($user['email'], $displayName, $changeIp);
             } catch (Exception $e) {
                 // 邮件发送失败不影响密码修改流程，只记录错误日志
-                error_log('发送密码修改提醒邮件失败：' . $e->getMessage());
+                Logger::error('发送密码修改提醒邮件失败：' . $e->getMessage());
             }
         }
         
@@ -646,12 +648,12 @@ class User {
             if ($sendResult) {
                 return ['success' => true, 'message' => '验证码已发送到您的邮箱，请查收'];
             } else {
-                error_log("邮件发送返回false，邮箱：{$email}");
+                Logger::error("邮件发送返回false，邮箱：{$email}");
                 return ['success' => false, 'message' => '邮件发送失败，请检查邮件配置或稍后重试'];
             }
         } catch (Exception $e) {
-            error_log('发送验证码异常：' . $e->getMessage());
-            error_log('堆栈：' . $e->getTraceAsString());
+            Logger::error('发送验证码异常：' . $e->getMessage());
+            Logger::error('堆栈：' . $e->getTraceAsString());
             return ['success' => false, 'message' => '发送验证码失败：' . $e->getMessage()];
         }
     }
@@ -709,7 +711,7 @@ class User {
                 [$userId, $ip, $ua, $isSuccess ? 1 : 0, $failReason]
             );
         } catch (Exception $e) {
-            error_log('记录登录日志失败：' . $e->getMessage());
+            Logger::error('记录登录日志失败：' . $e->getMessage());
         }
     }
     
@@ -792,7 +794,7 @@ class User {
                 );
             }
         } catch (Exception $e) {
-            error_log('检查多次失败登录失败：' . $e->getMessage());
+            Logger::error('检查多次失败登录失败：' . $e->getMessage());
         }
     }
     
@@ -801,8 +803,9 @@ class User {
      */
     public function resetPasswordByEmail($email, $code, $newPassword) {
         // 验证新密码强度
-        if (empty($newPassword) || mb_strlen($newPassword) < 6) {
-            return ['success' => false, 'message' => '新密码长度至少为6个字符'];
+        $passwordValidation = Security::validatePasswordStrength($newPassword);
+        if (!$passwordValidation['valid']) {
+            return ['success' => false, 'message' => $passwordValidation['message']];
         }
         
         // 查找用户

@@ -88,7 +88,7 @@ try {
     echo json_encode($result, JSON_UNESCAPED_UNICODE);
     
 } catch (Exception $e) {
-    error_log('验证邮箱错误：' . $e->getMessage());
+    Logger::error('验证邮箱错误：' . $e->getMessage());
     echo json_encode(['success' => false, 'message' => '验证失败'], JSON_UNESCAPED_UNICODE);
 }
 

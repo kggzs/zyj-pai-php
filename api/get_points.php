@@ -32,6 +32,6 @@ try {
     ]);
     
 } catch (Exception $e) {
-    error_log('获取积分信息错误：' . $e->getMessage());
+    Logger::error('获取积分信息错误：' . $e->getMessage());
     echo json_encode(['success' => false, 'message' => '获取失败']);
 }

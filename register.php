@@ -28,7 +28,20 @@ require_once __DIR__ . '/core/autoload.php';
             </div>
             <div class="form-group">
                 <label>密码</label>
-                <input type="password" name="password" required>
+                <input type="password" name="password" id="passwordInput" required placeholder="请输入密码" oninput="checkPasswordStrength(this.value)">
+                <div id="passwordRequirements" style="font-size: 12px; color: #666; margin-top: 5px; line-height: 1.6;">
+                    <div style="margin-bottom: 5px;"><strong>密码要求：</strong></div>
+                    <div id="requirementsList"></div>
+                </div>
+                <div id="passwordStrength" style="margin-top: 8px; display: none;">
+                    <div style="display: flex; align-items: center; margin-bottom: 5px;">
+                        <span style="font-size: 12px; color: #666; margin-right: 10px;">密码强度：</span>
+                        <div id="strengthBar" style="flex: 1; height: 6px; background: #eee; border-radius: 3px; overflow: hidden;">
+                            <div id="strengthBarFill" style="height: 100%; width: 0%; transition: all 0.3s; border-radius: 3px;"></div>
+                        </div>
+                        <span id="strengthText" style="font-size: 12px; margin-left: 10px; font-weight: bold;"></span>
+                    </div>
+                </div>
             </div>
             <div class="form-group">
                 <label style="display: flex; align-items: flex-start; cursor: pointer;">

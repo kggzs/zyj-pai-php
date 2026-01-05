@@ -76,7 +76,7 @@ try {
     echo json_encode(['success' => true, 'data' => $photoData]);
     
 } catch (Exception $e) {
-    error_log('获取照片详情错误：' . $e->getMessage());
+    Logger::error('获取照片详情错误：' . $e->getMessage());
     echo json_encode(['success' => false, 'message' => '获取失败']);
 }
 

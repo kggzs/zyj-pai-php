@@ -41,7 +41,7 @@ try {
     echo json_encode($result);
     
 } catch (Exception $e) {
-    error_log('创建公告错误：' . $e->getMessage());
+    Logger::error('创建公告错误：' . $e->getMessage());
     echo json_encode(['success' => false, 'message' => '创建失败']);
 }
 

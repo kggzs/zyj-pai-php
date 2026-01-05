@@ -54,7 +54,7 @@ try {
     echo json_encode($result);
     
 } catch (Exception $e) {
-    error_log('添加标签错误：' . $e->getMessage());
+    Logger::error('添加标签错误：' . $e->getMessage());
     echo json_encode(['success' => false, 'message' => '添加失败：' . $e->getMessage()]);
 }
 

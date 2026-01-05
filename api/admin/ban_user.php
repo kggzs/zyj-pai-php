@@ -28,7 +28,7 @@ try {
     echo json_encode($result);
     
 } catch (Exception $e) {
-    error_log('封禁用户错误：' . $e->getMessage());
+    Logger::error('封禁用户错误：' . $e->getMessage());
     echo json_encode(['success' => false, 'message' => '操作失败']);
 }
 

@@ -33,7 +33,7 @@ try {
     ]);
     
 } catch (Exception $e) {
-    error_log('获取公告列表错误：' . $e->getMessage());
+    Logger::error('获取公告列表错误：' . $e->getMessage());
     echo json_encode(['success' => false, 'message' => '获取失败']);
 }
 

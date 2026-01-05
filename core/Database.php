@@ -34,7 +34,7 @@ class Database {
             $stmt->execute($params);
             return $stmt;
         } catch (PDOException $e) {
-            error_log('数据库查询错误：' . $e->getMessage());
+            Logger::error('数据库查询错误：' . $e->getMessage());
             throw $e;
         }
     }

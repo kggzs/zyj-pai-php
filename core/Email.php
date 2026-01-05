@@ -55,7 +55,7 @@ class Email {
         $result = @mail($to, $subject, $body, implode("\r\n", $headers));
         
         if (!$result) {
-            error_log("邮件发送失败：to={$to}, subject={$subject}");
+            Logger::error("邮件发送失败：to={$to}, subject={$subject}");
         }
         
         return $result;
@@ -74,7 +74,7 @@ class Email {
             $fromName = $config['from_name'] ?? '1724464998';
             $smtpSecure = $config['smtp_secure'] ?? 'tls';
             
-            error_log("开始SMTP连接：{$smtpHost}:{$smtpPort}, 加密方式：{$smtpSecure}");
+            Logger::debug("开始SMTP连接：{$smtpHost}:{$smtpPort}, 加密方式：{$smtpSecure}");
             
             // 如果是SSL，使用ssl://协议
             $protocol = ($smtpSecure === 'ssl' && $smtpPort == 465) ? 'ssl://' : '';
@@ -99,11 +99,11 @@ class Email {
             );
             
             if (!$socket) {
-                error_log("SMTP连接失败：{$errstr} ({$errno}), 连接地址：{$connectString}");
+                Logger::debug("SMTP连接失败：{$errstr} ({$errno}), 连接地址：{$connectString}");
                 return false;
             }
             
-            error_log("SMTP连接成功");
+            Logger::debug("SMTP连接成功");
             
             // 设置超时
             stream_set_timeout($socket, 30);
@@ -111,51 +111,51 @@ class Email {
             // 读取欢迎消息（所有连接都需要）
             $response = $this->readSmtpResponse($socket);
             if (!$this->isSmtpSuccess($response)) {
-                error_log("SMTP连接响应错误：{$response}");
+                Logger::debug("SMTP连接响应错误：{$response}");
                 fclose($socket);
                 return false;
             }
-            error_log("SMTP欢迎消息：{$response}");
+            Logger::debug("SMTP欢迎消息：{$response}");
             
             // EHLO
             fwrite($socket, "EHLO " . $smtpHost . "\r\n");
             $response = $this->readSmtpResponse($socket);
             if (!$this->isSmtpSuccess($response)) {
-                error_log("SMTP EHLO错误：{$response}");
+                Logger::debug("SMTP EHLO错误：{$response}");
                 fclose($socket);
                 return false;
             }
-            error_log("SMTP EHLO成功：{$response}");
+            Logger::debug("SMTP EHLO成功：{$response}");
             
             // 如果需要TLS加密（587端口）
             if ($smtpSecure === 'tls' && $smtpPort == 587) {
                 fwrite($socket, "STARTTLS\r\n");
                 $response = $this->readSmtpResponse($socket);
                 if (!$this->isSmtpSuccess($response)) {
-                    error_log("SMTP STARTTLS错误：{$response}");
+                    Logger::debug("SMTP STARTTLS错误：{$response}");
                     fclose($socket);
                     return false;
                 }
-                error_log("SMTP STARTTLS响应：{$response}");
+                Logger::debug("SMTP STARTTLS响应：{$response}");
                 
                 // 启用加密
                 $cryptoMethod = STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT | STREAM_CRYPTO_METHOD_TLSv1_1_CLIENT | STREAM_CRYPTO_METHOD_TLS_CLIENT;
                 if (!stream_socket_enable_crypto($socket, true, $cryptoMethod)) {
-                    error_log("SMTP TLS加密启用失败");
+                    Logger::debug("SMTP TLS加密启用失败");
                     fclose($socket);
                     return false;
                 }
-                error_log("TLS加密已启用");
+                Logger::debug("TLS加密已启用");
                 
                 // TLS后需要重新EHLO
                 fwrite($socket, "EHLO " . $smtpHost . "\r\n");
                 $response = $this->readSmtpResponse($socket);
                 if (!$this->isSmtpSuccess($response)) {
-                    error_log("SMTP EHLO(TLS)错误：{$response}");
+                    Logger::debug("SMTP EHLO(TLS)错误：{$response}");
                     fclose($socket);
                     return false;
                 }
-                error_log("SMTP EHLO(TLS)成功：{$response}");
+                Logger::debug("SMTP EHLO(TLS)成功：{$response}");
             }
             
             // 如果需要认证
@@ -163,60 +163,60 @@ class Email {
                 fwrite($socket, "AUTH LOGIN\r\n");
                 $response = $this->readSmtpResponse($socket);
                 if (!$this->isSmtpSuccess($response)) {
-                    error_log("SMTP AUTH LOGIN错误：{$response}");
+                    Logger::debug("SMTP AUTH LOGIN错误：{$response}");
                     fclose($socket);
                     return false;
                 }
-                error_log("SMTP AUTH LOGIN响应：{$response}");
+                Logger::debug("SMTP AUTH LOGIN响应：{$response}");
                 
                 fwrite($socket, base64_encode($smtpUser) . "\r\n");
                 $response = $this->readSmtpResponse($socket);
                 if (!$this->isSmtpSuccess($response)) {
-                    error_log("SMTP 用户名认证错误：{$response}, 用户名：{$smtpUser}");
+                    Logger::debug("SMTP 用户名认证错误：{$response}, 用户名：{$smtpUser}");
                     fclose($socket);
                     return false;
                 }
-                error_log("SMTP 用户名认证成功");
+                Logger::debug("SMTP 用户名认证成功");
                 
                 fwrite($socket, base64_encode($smtpPass) . "\r\n");
                 $response = $this->readSmtpResponse($socket);
                 if (!$this->isSmtpSuccess($response)) {
-                    error_log("SMTP 密码认证错误：{$response}");
+                    Logger::debug("SMTP 密码认证错误：{$response}");
                     fclose($socket);
                     return false;
                 }
-                error_log("SMTP 密码认证成功");
+                Logger::debug("SMTP 密码认证成功");
             }
             
             // MAIL FROM
             fwrite($socket, "MAIL FROM: <{$fromEmail}>\r\n");
             $response = $this->readSmtpResponse($socket);
             if (!$this->isSmtpSuccess($response)) {
-                error_log("SMTP MAIL FROM错误：{$response}, 发件人：{$fromEmail}");
+                Logger::debug("SMTP MAIL FROM错误：{$response}, 发件人：{$fromEmail}");
                 fclose($socket);
                 return false;
             }
-            error_log("SMTP MAIL FROM成功");
+            Logger::debug("SMTP MAIL FROM成功");
             
             // RCPT TO
             fwrite($socket, "RCPT TO: <{$to}>\r\n");
             $response = $this->readSmtpResponse($socket);
             if (!$this->isSmtpSuccess($response)) {
-                error_log("SMTP RCPT TO错误：{$response}, 收件人：{$to}");
+                Logger::debug("SMTP RCPT TO错误：{$response}, 收件人：{$to}");
                 fclose($socket);
                 return false;
             }
-            error_log("SMTP RCPT TO成功");
+            Logger::debug("SMTP RCPT TO成功");
             
             // DATA
             fwrite($socket, "DATA\r\n");
             $response = $this->readSmtpResponse($socket);
             if (!$this->isSmtpSuccess($response)) {
-                error_log("SMTP DATA错误：{$response}");
+                Logger::debug("SMTP DATA错误：{$response}");
                 fclose($socket);
                 return false;
             }
-            error_log("SMTP DATA成功");
+            Logger::debug("SMTP DATA成功");
             
             // 邮件内容
             $message = "From: =?UTF-8?B?" . base64_encode($fromName) . "?= <{$fromEmail}>\r\n";
@@ -236,26 +236,26 @@ class Email {
             fwrite($socket, $message);
             $response = $this->readSmtpResponse($socket);
             if (!$this->isSmtpSuccess($response)) {
-                error_log("SMTP 邮件发送错误：{$response}");
+                Logger::debug("SMTP 邮件发送错误：{$response}");
                 fclose($socket);
                 return false;
             }
-            error_log("SMTP 邮件发送成功：{$response}");
+            Logger::debug("SMTP 邮件发送成功：{$response}");
             
             // QUIT
             fwrite($socket, "QUIT\r\n");
             $this->readSmtpResponse($socket);
             fclose($socket);
             
-            error_log("SMTP邮件发送完成，收件人：{$to}");
+            Logger::debug("SMTP邮件发送完成，收件人：{$to}");
             return true;
         } catch (Exception $e) {
-            error_log("SMTP发送异常：" . $e->getMessage());
-            error_log("堆栈：" . $e->getTraceAsString());
+            Logger::debug("SMTP发送异常：" . $e->getMessage());
+            Logger::debug("堆栈：" . $e->getTraceAsString());
             return false;
         } catch (Error $e) {
-            error_log("SMTP发送致命错误：" . $e->getMessage());
-            error_log("堆栈：" . $e->getTraceAsString());
+            Logger::debug("SMTP发送致命错误：" . $e->getMessage());
+            Logger::debug("堆栈：" . $e->getTraceAsString());
             return false;
         }
     }

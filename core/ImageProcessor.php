@@ -35,7 +35,7 @@ class ImageProcessor {
                 }
             } catch (Exception $e) {
                 // EXIF解析失败不影响上传流程
-                error_log('EXIF解析失败：' . $e->getMessage());
+                Logger::error('EXIF解析失败：' . $e->getMessage());
             }
             
             // 保存原图
@@ -49,8 +49,8 @@ class ImageProcessor {
             ];
             
         } catch (Exception $e) {
-            error_log('图片处理错误：' . $e->getMessage());
-            error_log('图片处理错误堆栈：' . $e->getTraceAsString());
+            Logger::error('图片处理错误：' . $e->getMessage());
+            Logger::error('图片处理错误堆栈：' . $e->getTraceAsString());
             return ['success' => false, 'message' => '图片处理失败：' . $e->getMessage()];
         }
     }
@@ -76,8 +76,8 @@ class ImageProcessor {
             ];
             
         } catch (Exception $e) {
-            error_log('图片处理错误：' . $e->getMessage());
-            error_log('图片处理错误堆栈：' . $e->getTraceAsString());
+            Logger::error('图片处理错误：' . $e->getMessage());
+            Logger::error('图片处理错误堆栈：' . $e->getTraceAsString());
             return ['success' => false, 'message' => '图片处理失败：' . $e->getMessage()];
         }
     }
@@ -138,7 +138,7 @@ class ImageProcessor {
             
             foreach ($dangerousPatterns as $pattern) {
                 if (preg_match($pattern, $scanData)) {
-                    error_log('检测到可疑文件内容：' . $pattern);
+                    Logger::error('检测到可疑文件内容：' . $pattern);
                     throw new Exception('文件内容安全检查失败');
                 }
             }
@@ -186,7 +186,7 @@ class ImageProcessor {
         if ($config['upload_security']['content_scan'] ?? true) {
             $malwareCheck = $security->detectMaliciousContent($imageData);
             if (!$malwareCheck['safe']) {
-                error_log('检测到可疑文件内容：' . implode(', ', $malwareCheck['threats']));
+                Logger::error('检测到可疑文件内容：' . implode(', ', $malwareCheck['threats']));
                 throw new Exception('文件内容安全检查失败：' . implode(', ', $malwareCheck['threats']));
             }
         }
@@ -292,8 +292,8 @@ class ImageProcessor {
             ];
             
         } catch (Exception $e) {
-            error_log('录像处理错误：' . $e->getMessage());
-            error_log('录像处理错误堆栈：' . $e->getTraceAsString());
+            Logger::error('录像处理错误：' . $e->getMessage());
+            Logger::error('录像处理错误堆栈：' . $e->getTraceAsString());
             return ['success' => false, 'message' => '录像处理失败：' . $e->getMessage()];
         }
     }
@@ -323,8 +323,8 @@ class ImageProcessor {
             ];
             
         } catch (Exception $e) {
-            error_log('录像处理错误：' . $e->getMessage());
-            error_log('录像处理错误堆栈：' . $e->getTraceAsString());
+            Logger::error('录像处理错误：' . $e->getMessage());
+            Logger::error('录像处理错误堆栈：' . $e->getTraceAsString());
             return ['success' => false, 'message' => '录像处理失败：' . $e->getMessage()];
         }
     }
@@ -372,7 +372,7 @@ class ImageProcessor {
         
         // 记录原始字符串的前100个字符用于调试
         $originalPreview = substr($base64String, 0, 100);
-        error_log('Base64字符串预览（前100字符）: ' . $originalPreview);
+        Logger::error('Base64字符串预览（前100字符）: ' . $originalPreview);
         
         // 查找非法字符
         $invalidChars = preg_replace('/[A-Za-z0-9+\/]/', '', $base64String);
@@ -382,15 +382,15 @@ class ImageProcessor {
             // 获取唯一非法字符
             $uniqueInvalidChars = array_unique(str_split($invalidChars));
             $invalidCharsStr = implode('', $uniqueInvalidChars);
-            error_log('发现非法字符: ' . bin2hex($invalidCharsStr) . ' (hex)');
-            error_log('非法字符ASCII码: ' . implode(',', array_map('ord', $uniqueInvalidChars)));
+            Logger::error('发现非法字符: ' . bin2hex($invalidCharsStr) . ' (hex)');
+            Logger::error('非法字符ASCII码: ' . implode(',', array_map('ord', $uniqueInvalidChars)));
             
             // 尝试清理常见的非法字符（可能是编码问题）
             // 移除所有非Base64字符（除了等号）
             $cleanedString = preg_replace('/[^A-Za-z0-9+\/=]/', '', $base64String);
             
             if (strlen($cleanedString) !== strlen($base64String)) {
-                error_log('已清理非法字符，原始长度: ' . strlen($base64String) . ', 清理后长度: ' . strlen($cleanedString));
+                Logger::error('已清理非法字符，原始长度: ' . strlen($base64String) . ', 清理后长度: ' . strlen($cleanedString));
                 $base64String = $cleanedString;
             } else {
                 throw new Exception('Base64格式错误，包含非法字符: ' . bin2hex($invalidCharsStr));
@@ -400,8 +400,8 @@ class ImageProcessor {
         // 验证Base64字符串格式（Base64只包含A-Z, a-z, 0-9, +, /, =）
         // 等号只能出现在末尾，最多2个
         if (!preg_match('/^[A-Za-z0-9+\/]+={0,2}$/', $base64String)) {
-            error_log('Base64格式验证失败，字符串长度: ' . strlen($base64String));
-            error_log('Base64前200字符: ' . substr($base64String, 0, 200));
+            Logger::error('Base64格式验证失败，字符串长度: ' . strlen($base64String));
+            Logger::error('Base64前200字符: ' . substr($base64String, 0, 200));
             throw new Exception('Base64格式错误，字符串格式不符合Base64规范');
         }
         
@@ -416,8 +416,8 @@ class ImageProcessor {
         $videoData = base64_decode($base64String, true);
         if ($videoData === false || empty($videoData)) {
             // 记录更多调试信息
-            error_log('Base64解码失败，字符串长度: ' . strlen($base64String));
-            error_log('Base64前100字符: ' . substr($base64String, 0, 100));
+            Logger::error('Base64解码失败，字符串长度: ' . strlen($base64String));
+            Logger::error('Base64前100字符: ' . substr($base64String, 0, 100));
             throw new Exception('Base64解码失败，录像格式错误。请检查录像数据是否完整');
         }
         

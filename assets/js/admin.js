@@ -1045,7 +1045,7 @@ function toggleUserGroupAndLoad(groupId, userId, userName) {
             .then(res => res.json())
             .then(data => {
                 if (data.success && data.data.list.length > 0) {
-                    displayUserPhotos(content, data.data.list, userName);
+                    displayUserPhotos(content, data.data.list, userName, groupId);
                 } else {
                     content.innerHTML = '<div style="text-align:center; padding:20px; color:#999;">该用户暂无照片</div>';
                 }
@@ -1058,7 +1058,7 @@ function toggleUserGroupAndLoad(groupId, userId, userName) {
 }
 
 // 显示用户照片
-function displayUserPhotos(container, photos, userName) {
+function displayUserPhotos(container, photos, userName, userGroupId) {
     // 按拍摄码分组
     const groupedByInvite = {};
     photos.forEach(photo => {
@@ -1077,7 +1077,8 @@ function displayUserPhotos(container, photos, userName) {
     
     for (const inviteCode of sortedInviteCodes) {
         const photos = groupedByInvite[inviteCode];
-        const inviteGroupId = `invite-group-${inviteIndex}`;
+        // 使用用户组ID作为前缀，确保每个用户的拍摄码组ID唯一
+        const inviteGroupId = `${userGroupId}-invite-${inviteIndex}`;
         const inviteLabel = photos[0].invite_label || '';
         
         html += `

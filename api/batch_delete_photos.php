@@ -77,7 +77,7 @@ try {
     echo json_encode($result);
     
 } catch (Exception $e) {
-    error_log('批量删除照片错误：' . $e->getMessage());
+    Logger::error('批量删除照片错误：' . $e->getMessage());
     echo json_encode(['success' => false, 'message' => '删除失败：' . $e->getMessage()]);
 }
 

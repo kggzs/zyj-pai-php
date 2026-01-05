@@ -384,12 +384,12 @@ class Admin {
         $params[] = $pageSize;
         $params[] = $offset;
         
-        error_log('Admin::getAllPhotos: 执行SQL: ' . $sql);
-        error_log('Admin::getAllPhotos: SQL参数: ' . json_encode($params));
+        Logger::debug('Admin::getAllPhotos: 执行SQL: ' . $sql);
+        Logger::debug('Admin::getAllPhotos: SQL参数: ' . json_encode($params));
         
         $photos = $this->db->fetchAll($sql, $params);
         
-        error_log('Admin::getAllPhotos: 查询到 ' . count($photos) . ' 张照片');
+        Logger::debug('Admin::getAllPhotos: 查询到 ' . count($photos) . ' 张照片');
         
         return [
             'list' => $photos,
@@ -490,7 +490,7 @@ class Admin {
                 "SELECT COUNT(*) as total FROM users WHERE (is_vip = 1 OR is_vip = '1' OR CAST(is_vip AS UNSIGNED) = 1)"
             );
             if (($allVipCheck['total'] ?? 0) > 0) {
-                error_log("VIP统计调试：数据库中有 " . $allVipCheck['total'] . " 个标记为VIP的用户，但有效VIP为0（可能都已过期或时间格式问题）");
+                Logger::debug("VIP统计调试：数据库中有 " . $allVipCheck['total'] . " 个标记为VIP的用户，但有效VIP为0（可能都已过期或时间格式问题）");
             }
         }
         
@@ -619,14 +619,13 @@ class Admin {
             $basePath = realpath(__DIR__ . '/../');
             
             if (!$basePath) {
-                error_log('无法获取项目根路径');
+                Logger::error('无法获取项目根路径');
                 return 0;
             }
             
             // 直接统计uploads目录下所有文件的大小（最准确的方法）
             $uploadsDirs = [
-                $basePath . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'original',
-                $basePath . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'result'
+                $basePath . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'original'
             ];
             
             foreach ($uploadsDirs as $dir) {
@@ -634,18 +633,18 @@ class Admin {
                 if (is_dir($normalizedDir)) {
                     $dirSize = $this->getDirectorySize($normalizedDir);
                     $totalSize += $dirSize;
-                    error_log("统计目录大小：{$normalizedDir} = " . number_format($dirSize) . " 字节");
+                    Logger::debug("统计目录大小：{$normalizedDir} = " . number_format($dirSize) . " 字节");
                 } else {
-                    error_log("目录不存在：{$normalizedDir}");
+                    Logger::warning("目录不存在：{$normalizedDir}");
                 }
             }
             
-            error_log("照片总大小统计结果：" . number_format($totalSize) . " 字节 (" . round($totalSize / 1024 / 1024, 2) . " MB)");
+            Logger::debug("照片总大小统计结果：" . number_format($totalSize) . " 字节 (" . round($totalSize / 1024 / 1024, 2) . " MB)");
             
             return $totalSize;
         } catch (Exception $e) {
-            error_log('计算照片文件大小失败：' . $e->getMessage());
-            error_log('堆栈：' . $e->getTraceAsString());
+            Logger::error('计算照片文件大小失败：' . $e->getMessage());
+            Logger::error('堆栈：' . $e->getTraceAsString());
             return 0;
         }
     }
@@ -677,7 +676,7 @@ class Admin {
                 }
             }
         } catch (Exception $e) {
-            error_log('计算目录大小失败：' . $directory . ' - ' . $e->getMessage());
+            Logger::error('计算目录大小失败：' . $directory . ' - ' . $e->getMessage());
             // 如果RecursiveIteratorIterator失败，使用备用方法
             try {
                 $files = scandir($directory);
@@ -698,7 +697,7 @@ class Admin {
                     }
                 }
             } catch (Exception $e2) {
-                error_log('备用方法也失败：' . $e2->getMessage());
+                Logger::error('备用方法也失败：' . $e2->getMessage());
             }
         }
         
@@ -1107,7 +1106,7 @@ class Admin {
                 [$adminId, $adminUsername, $operationType, $targetType, $targetId, $description, $ip, $userAgent]
             );
         } catch (Exception $e) {
-            error_log('记录管理员操作日志失败：' . $e->getMessage());
+            Logger::error('记录管理员操作日志失败：' . $e->getMessage());
         }
     }
     
@@ -1131,7 +1130,7 @@ class Admin {
                 [$userId, $behaviorType, $description, $ip, $userAgent, $requestUrl, $requestDataJson, $severity]
             );
         } catch (Exception $e) {
-            error_log('记录异常行为失败：' . $e->getMessage());
+            Logger::error('记录异常行为失败：' . $e->getMessage());
         }
     }
     
@@ -1447,13 +1446,26 @@ class Admin {
      * 获取系统错误日志（PHP错误日志）
      */
     public function getSystemErrorLogs($lines = 100) {
-        $logFile = ini_get('error_log');
-        if (empty($logFile) || !file_exists($logFile)) {
-            // 尝试常见的日志位置
-            $logFile = __DIR__ . '/../logs/error.log';
-            if (!file_exists($logFile)) {
-                return ['list' => [], 'total' => 0];
+        // 使用新的日志系统，读取 logs 目录下的日志文件
+        $logDir = __DIR__ . '/../logs';
+        // 查找最新的日志文件（按日期）
+        $todayLogFile = $logDir . '/app-' . date('Y-m-d') . '.log';
+        $logFile = file_exists($todayLogFile) ? $todayLogFile : null;
+        
+        // 如果今天的日志文件不存在，查找最近的日志文件
+        if (!$logFile) {
+            $logFiles = glob($logDir . '/app-*.log');
+            if (!empty($logFiles)) {
+                // 按修改时间排序，获取最新的
+                usort($logFiles, function($a, $b) {
+                    return filemtime($b) - filemtime($a);
+                });
+                $logFile = $logFiles[0];
             }
+        }
+        
+        if (!$logFile || !file_exists($logFile)) {
+            return ['list' => [], 'total' => 0];
         }
         
         // 读取最后N行日志

@@ -84,14 +84,14 @@ try {
     if (ob_get_level()) {
         ob_clean();
     }
-    error_log('获取用户列表错误：' . $e->getMessage());
+    Logger::error('获取用户列表错误：' . $e->getMessage());
     echo json_encode(['success' => false, 'message' => '获取失败'], JSON_UNESCAPED_UNICODE);
 } catch (Error $e) {
     // 清除所有输出
     if (ob_get_level()) {
         ob_clean();
     }
-    error_log('获取用户列表致命错误：' . $e->getMessage());
+    Logger::error('获取用户列表致命错误：' . $e->getMessage());
     echo json_encode(['success' => false, 'message' => '获取失败'], JSON_UNESCAPED_UNICODE);
 }
 

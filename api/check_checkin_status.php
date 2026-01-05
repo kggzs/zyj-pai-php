@@ -41,7 +41,7 @@ try {
     ], JSON_UNESCAPED_UNICODE);
     
 } catch (PDOException $e) {
-    error_log('检查签到状态数据库错误：' . $e->getMessage());
+    Logger::error('检查签到状态数据库错误：' . $e->getMessage());
     // 如果表不存在，返回默认值
     if (strpos($e->getMessage(), "doesn't exist") !== false || strpos($e->getMessage(), "不存在") !== false) {
         echo json_encode([
@@ -55,7 +55,7 @@ try {
         echo json_encode(['success' => false, 'message' => '获取失败'], JSON_UNESCAPED_UNICODE);
     }
 } catch (Exception $e) {
-    error_log('检查签到状态错误：' . $e->getMessage());
+    Logger::error('检查签到状态错误：' . $e->getMessage());
     echo json_encode(['success' => false, 'message' => '获取失败'], JSON_UNESCAPED_UNICODE);
 }
 

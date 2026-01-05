@@ -33,14 +33,14 @@ try {
     
     // 如果发送失败，记录详细错误信息
     if (!$result['success']) {
-        error_log('发送验证码失败详情：' . json_encode($result, JSON_UNESCAPED_UNICODE));
+        Logger::error('发送验证码失败详情：' . json_encode($result, JSON_UNESCAPED_UNICODE));
     }
     
     echo json_encode($result, JSON_UNESCAPED_UNICODE);
     
 } catch (Exception $e) {
-    error_log('发送验证码异常：' . $e->getMessage());
-    error_log('堆栈：' . $e->getTraceAsString());
+    Logger::error('发送验证码异常：' . $e->getMessage());
+    Logger::error('堆栈：' . $e->getTraceAsString());
     echo json_encode(['success' => false, 'message' => '发送失败：' . $e->getMessage()], JSON_UNESCAPED_UNICODE);
 }
 

@@ -43,7 +43,7 @@ class Shop {
             
             return ['success' => true, 'message' => '商品添加成功', 'id' => $this->db->lastInsertId()];
         } catch (Exception $e) {
-            error_log('添加商品失败：' . $e->getMessage());
+            Logger::error('添加商品失败：' . $e->getMessage());
             return ['success' => false, 'message' => '添加失败：' . $e->getMessage()];
         }
     }
@@ -78,7 +78,7 @@ class Shop {
             
             return ['success' => true, 'message' => '商品更新成功'];
         } catch (Exception $e) {
-            error_log('更新商品失败：' . $e->getMessage());
+            Logger::error('更新商品失败：' . $e->getMessage());
             return ['success' => false, 'message' => '更新失败：' . $e->getMessage()];
         }
     }
@@ -104,7 +104,7 @@ class Shop {
                 return ['success' => true, 'message' => '商品删除成功'];
             }
         } catch (Exception $e) {
-            error_log('删除商品失败：' . $e->getMessage());
+            Logger::error('删除商品失败：' . $e->getMessage());
             return ['success' => false, 'message' => '删除失败：' . $e->getMessage()];
         }
     }
@@ -117,7 +117,7 @@ class Shop {
             $this->db->execute("UPDATE points_shop SET status = ? WHERE id = ?", [$status, $id]);
             return ['success' => true, 'message' => $status == 1 ? '商品已上架' : '商品已下架'];
         } catch (Exception $e) {
-            error_log('更新商品状态失败：' . $e->getMessage());
+            Logger::error('更新商品状态失败：' . $e->getMessage());
             return ['success' => false, 'message' => '操作失败'];
         }
     }
@@ -268,7 +268,7 @@ class Shop {
             
         } catch (Exception $e) {
             $this->db->rollBack();
-            error_log('兑换商品失败：' . $e->getMessage());
+            Logger::error('兑换商品失败：' . $e->getMessage());
             return ['success' => false, 'message' => '兑换失败：' . $e->getMessage()];
         }
     }

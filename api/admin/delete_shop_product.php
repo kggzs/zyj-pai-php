@@ -28,7 +28,7 @@ try {
     echo json_encode($result);
     
 } catch (Exception $e) {
-    error_log('删除商品错误：' . $e->getMessage());
+    Logger::error('删除商品错误：' . $e->getMessage());
     echo json_encode(['success' => false, 'message' => '删除失败']);
 }
 

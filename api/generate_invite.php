@@ -41,6 +41,6 @@ try {
     echo json_encode($result);
     
 } catch (Exception $e) {
-    error_log('生成邀请链接错误：' . $e->getMessage());
+    Logger::error('生成邀请链接错误：' . $e->getMessage());
     echo json_encode(['success' => false, 'message' => '生成失败']);
 }

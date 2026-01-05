@@ -27,7 +27,7 @@ try {
     echo json_encode($result);
     
 } catch (Exception $e) {
-    error_log('处理异常行为错误：' . $e->getMessage());
+    Logger::error('处理异常行为错误：' . $e->getMessage());
     echo json_encode(['success' => false, 'message' => '处理失败']);
 }
 

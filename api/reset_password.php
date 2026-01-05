@@ -53,7 +53,7 @@ try {
     }
     
 } catch (Exception $e) {
-    error_log('找回密码错误：' . $e->getMessage());
+    Logger::error('找回密码错误：' . $e->getMessage());
     echo json_encode(['success' => false, 'message' => '操作失败'], JSON_UNESCAPED_UNICODE);
 }
 

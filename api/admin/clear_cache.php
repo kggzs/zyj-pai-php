@@ -50,7 +50,7 @@ try {
     echo json_encode(['success' => true, 'message' => $message]);
     
 } catch (Exception $e) {
-    error_log('清除缓存错误：' . $e->getMessage());
+    Logger::error('清除缓存错误：' . $e->getMessage());
     echo json_encode(['success' => false, 'message' => '清除失败']);
 }
 

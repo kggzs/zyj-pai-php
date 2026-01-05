@@ -51,6 +51,6 @@ try {
     echo json_encode($result);
     
 } catch (Exception $e) {
-    error_log('注册错误：' . $e->getMessage());
+    Logger::error('注册错误：' . $e->getMessage());
     echo json_encode(['success' => false, 'message' => '注册失败']);
 }

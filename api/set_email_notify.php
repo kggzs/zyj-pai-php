@@ -27,7 +27,7 @@ try {
     echo json_encode($result, JSON_UNESCAPED_UNICODE);
     
 } catch (Exception $e) {
-    error_log('设置邮箱提醒错误：' . $e->getMessage());
+    Logger::error('设置邮箱提醒错误：' . $e->getMessage());
     echo json_encode(['success' => false, 'message' => '设置失败'], JSON_UNESCAPED_UNICODE);
 }
 

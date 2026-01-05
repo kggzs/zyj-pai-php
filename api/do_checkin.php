@@ -51,7 +51,7 @@ try {
     echo json_encode($result, JSON_UNESCAPED_UNICODE);
     
 } catch (PDOException $e) {
-    error_log('签到数据库错误：' . $e->getMessage());
+    Logger::error('签到数据库错误：' . $e->getMessage());
     // 检查是否是表不存在的错误
     if (strpos($e->getMessage(), "doesn't exist") !== false || strpos($e->getMessage(), "不存在") !== false) {
         echo json_encode(['success' => false, 'message' => '签到功能未初始化，请先执行数据库迁移'], JSON_UNESCAPED_UNICODE);
@@ -59,7 +59,7 @@ try {
         echo json_encode(['success' => false, 'message' => '数据库错误，请稍后重试'], JSON_UNESCAPED_UNICODE);
     }
 } catch (Exception $e) {
-    error_log('签到错误：' . $e->getMessage());
+    Logger::error('签到错误：' . $e->getMessage());
     echo json_encode(['success' => false, 'message' => '签到失败：' . $e->getMessage()], JSON_UNESCAPED_UNICODE);
 }
 

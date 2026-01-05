@@ -32,6 +32,6 @@ try {
     echo json_encode($result);
     
 } catch (Exception $e) {
-    error_log('验证拍摄链接码错误：' . $e->getMessage());
+    Logger::error('验证拍摄链接码错误：' . $e->getMessage());
     echo json_encode(['valid' => false, 'message' => '验证失败']);
 }

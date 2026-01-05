@@ -18,6 +18,6 @@ try {
     $configs = $adminModel->getSystemConfig();
     echo json_encode(['success' => true, 'data' => $configs]);
 } catch (Exception $e) {
-    error_log('获取系统配置错误：' . $e->getMessage());
+    Logger::error('获取系统配置错误：' . $e->getMessage());
     echo json_encode(['success' => false, 'message' => '获取失败']);
 }

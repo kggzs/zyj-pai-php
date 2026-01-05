@@ -81,7 +81,7 @@ try {
     ]);
     
 } catch (Exception $e) {
-    error_log('设置VIP错误：' . $e->getMessage());
+    Logger::error('设置VIP错误：' . $e->getMessage());
     echo json_encode(['success' => false, 'message' => '设置失败']);
 }
 

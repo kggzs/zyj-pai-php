@@ -265,7 +265,7 @@ class Points {
             
         } catch (Exception $e) {
             $this->db->rollBack();
-            error_log('签到失败：' . $e->getMessage());
+            Logger::error('签到失败：' . $e->getMessage());
             return [
                 'success' => false,
                 'message' => '签到失败，请稍后重试'

@@ -55,7 +55,7 @@ try {
     echo json_encode($result);
     
 } catch (Exception $e) {
-    error_log('更新邀请码错误：' . $e->getMessage());
+    Logger::error('更新邀请码错误：' . $e->getMessage());
     echo json_encode(['success' => false, 'message' => '更新失败']);
 }
 

@@ -27,7 +27,7 @@ try {
     echo json_encode(['success' => true, 'data' => $result]);
     
 } catch (Exception $e) {
-    error_log('获取照片上传日志错误：' . $e->getMessage());
+    Logger::error('获取照片上传日志错误：' . $e->getMessage());
     echo json_encode(['success' => false, 'message' => '获取失败']);
 }
 

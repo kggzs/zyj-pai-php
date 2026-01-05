@@ -30,7 +30,7 @@ class ExifParser {
     private function parseExifFromFile($imagePath) {
         // 检查是否支持EXIF扩展
         if (!function_exists('exif_read_data')) {
-            error_log('EXIF扩展未启用，无法解析EXIF数据');
+            Logger::warning('EXIF扩展未启用，无法解析EXIF数据');
             return [];
         }
         
@@ -55,7 +55,7 @@ class ExifParser {
     private function parseExifFromData($imageData) {
         // 检查是否支持EXIF扩展
         if (!function_exists('exif_read_data')) {
-            error_log('EXIF扩展未启用，无法解析EXIF数据');
+            Logger::warning('EXIF扩展未启用，无法解析EXIF数据');
             return [];
         }
         
@@ -81,7 +81,7 @@ class ExifParser {
                 $result = [];
             }
         } catch (Exception $e) {
-            error_log('解析EXIF数据失败：' . $e->getMessage());
+            Logger::error('解析EXIF数据失败：' . $e->getMessage());
             $result = [];
         } finally {
             // 删除临时文件

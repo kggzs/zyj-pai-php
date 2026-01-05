@@ -36,6 +36,6 @@ try {
     echo json_encode($result);
     
 } catch (Exception $e) {
-    error_log('登录错误：' . $e->getMessage());
+    Logger::error('登录错误：' . $e->getMessage());
     echo json_encode(['success' => false, 'message' => '登录失败']);
 }

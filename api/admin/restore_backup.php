@@ -32,7 +32,7 @@ try {
     echo json_encode($result);
     
 } catch (Exception $e) {
-    error_log('恢复备份错误：' . $e->getMessage());
+    Logger::error('恢复备份错误：' . $e->getMessage());
     echo json_encode(['success' => false, 'message' => '恢复失败：' . $e->getMessage()]);
 }
 

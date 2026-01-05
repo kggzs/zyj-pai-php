@@ -29,7 +29,7 @@ try {
     echo json_encode($result);
     
 } catch (Exception $e) {
-    error_log('标记公告已读错误：' . $e->getMessage());
+    Logger::error('标记公告已读错误：' . $e->getMessage());
     echo json_encode(['success' => false, 'message' => '操作失败']);
 }
 

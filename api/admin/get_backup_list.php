@@ -19,7 +19,7 @@ try {
     echo json_encode(['success' => true, 'data' => $result]);
     
 } catch (Exception $e) {
-    error_log('获取备份列表错误：' . $e->getMessage());
+    Logger::error('获取备份列表错误：' . $e->getMessage());
     echo json_encode(['success' => false, 'message' => '获取失败']);
 }
 

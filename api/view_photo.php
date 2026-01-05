@@ -90,7 +90,7 @@ try {
                 $relativePath = 'uploads/' . $relativePath;
             } else {
                 // 记录错误日志以便调试
-                error_log('view_photo.php [403]: 非法路径格式 - 原始路径: "' . $originalPathFromDb . '", 处理后: "' . $relativePath . '", photo_id: ' . $photoId . ', user_id: ' . ($currentUser['id'] ?? 'N/A'));
+                Logger::error('view_photo.php [403]: 非法路径格式 - 原始路径: "' . $originalPathFromDb . '", 处理后: "' . $relativePath . '", photo_id: ' . $photoId . ', user_id: ' . ($currentUser['id'] ?? 'N/A'));
                 http_response_code(403);
                 header('Content-Type: text/plain; charset=utf-8');
                 die('非法路径: ' . htmlspecialchars($originalPathFromDb));
@@ -102,10 +102,10 @@ try {
             if ($uploadsPos !== false) {
                 // 提取uploads/之后的部分
                 $relativePath = substr($relativePath, $uploadsPos);
-                error_log('view_photo.php [修复路径]: 原始路径: "' . $originalPathFromDb . '", 修复后: "' . $relativePath . '", photo_id: ' . $photoId);
+                Logger::error('view_photo.php [修复路径]: 原始路径: "' . $originalPathFromDb . '", 修复后: "' . $relativePath . '", photo_id: ' . $photoId);
             } else {
                 // 如果找不到uploads/，记录错误
-            error_log('view_photo.php [403]: 路径格式错误 - 原始路径: "' . $originalPathFromDb . '", 处理后: "' . $relativePath . '", photo_id: ' . $photoId);
+            Logger::error('view_photo.php [403]: 路径格式错误 - 原始路径: "' . $originalPathFromDb . '", 处理后: "' . $relativePath . '", photo_id: ' . $photoId);
         http_response_code(403);
             header('Content-Type: text/plain; charset=utf-8');
             die('路径格式错误');
@@ -124,11 +124,11 @@ try {
     // 如果realpath失败，尝试直接使用构建的路径（可能是文件不存在）
     if ($normalizedPath === false) {
         // 记录详细信息以便调试
-        error_log('view_photo.php [404]: 文件路径不存在 - 相对路径: "' . $relativePath . '", 完整路径: "' . $filePath . '", photo_id: ' . $photoId . ', 原始路径: "' . $originalPathFromDb . '"');
+        Logger::error('view_photo.php [404]: 文件路径不存在 - 相对路径: "' . $relativePath . '", 完整路径: "' . $filePath . '", photo_id: ' . $photoId . ', 原始路径: "' . $originalPathFromDb . '"');
         
         // 检查uploads目录是否存在
         if ($uploadsDir === false) {
-            error_log('view_photo.php [500]: uploads目录不存在 - baseDir: "' . $baseDir . '"');
+            Logger::error('view_photo.php [500]: uploads目录不存在 - baseDir: "' . $baseDir . '"');
             http_response_code(500);
             header('Content-Type: text/plain; charset=utf-8');
             die('服务器配置错误');
@@ -151,7 +151,7 @@ try {
     
     // 验证uploads目录
     if ($uploadsDir === false) {
-        error_log('view_photo.php [500]: uploads目录不存在 - baseDir: "' . $baseDir . '"');
+        Logger::error('view_photo.php [500]: uploads目录不存在 - baseDir: "' . $baseDir . '"');
         http_response_code(500);
         header('Content-Type: text/plain; charset=utf-8');
         die('服务器配置错误');
@@ -159,7 +159,7 @@ try {
     
     // 确保文件路径在uploads目录内（防止路径遍历攻击）
     if ($normalizedPath && strpos($normalizedPath, $uploadsDir) !== 0) {
-        error_log('view_photo.php [403]: 路径验证失败 - filePath: "' . $normalizedPath . '", uploadsDir: "' . $uploadsDir . '", 原始路径: "' . $originalPathFromDb . '", photo_id: ' . $photoId);
+        Logger::error('view_photo.php [403]: 路径验证失败 - filePath: "' . $normalizedPath . '", uploadsDir: "' . $uploadsDir . '", 原始路径: "' . $originalPathFromDb . '", photo_id: ' . $photoId);
         http_response_code(403);
         header('Content-Type: text/plain; charset=utf-8');
         die('路径验证失败');
@@ -167,7 +167,7 @@ try {
     
     // 最终检查文件是否存在
     if (!file_exists($normalizedPath ?: $filePath)) {
-        error_log('view_photo.php [404]: 文件不存在 - 路径: "' . ($normalizedPath ?: $filePath) . '", photo_id: ' . $photoId);
+        Logger::error('view_photo.php [404]: 文件不存在 - 路径: "' . ($normalizedPath ?: $filePath) . '", photo_id: ' . $photoId);
         http_response_code(404);
         header('Content-Type: text/plain; charset=utf-8');
         die('文件不存在');
@@ -385,7 +385,7 @@ try {
     exit;
     
 } catch (Exception $e) {
-    error_log('查看照片错误：' . $e->getMessage());
+    Logger::error('查看照片错误：' . $e->getMessage());
     http_response_code(500);
     die('查看失败');
 }

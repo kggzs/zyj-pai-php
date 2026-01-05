@@ -136,7 +136,7 @@ try {
     echo json_encode($result, JSON_UNESCAPED_UNICODE);
     
 } catch (Exception $e) {
-    error_log('发送验证码错误：' . $e->getMessage());
+    Logger::error('发送验证码错误：' . $e->getMessage());
     echo json_encode(['success' => false, 'message' => '发送失败'], JSON_UNESCAPED_UNICODE);
 }
 

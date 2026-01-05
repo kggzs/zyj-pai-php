@@ -21,10 +21,15 @@ class Security {
     
     /**
      * 验证CSRF Token
+     * 支持从POST参数、GET参数或HTTP头（X-CSRF-Token）中读取token
      */
     public static function verifyCsrfToken($token = null) {
         if ($token === null) {
-            $token = $_POST['csrf_token'] ?? $_GET['csrf_token'] ?? '';
+            // 优先级：POST参数 > HTTP头 > GET参数
+            $token = $_POST['csrf_token'] 
+                  ?? $_SERVER['HTTP_X_CSRF_TOKEN'] 
+                  ?? $_GET['csrf_token'] 
+                  ?? '';
         }
         
         if (empty($token) || !isset($_SESSION[self::$csrfTokenName])) {
@@ -323,6 +328,332 @@ class Security {
         }
         
         return false;
+    }
+    
+    /**
+     * 设置安全响应头
+     * 包括CSP、X-Content-Type-Options、X-Frame-Options、X-XSS-Protection、HSTS等
+     * @param array $options 配置选项，可覆盖默认配置
+     */
+    public static function setSecurityHeaders($options = []) {
+        // 如果响应头已发送，则跳过
+        if (headers_sent()) {
+            return;
+        }
+        
+        // 读取配置
+        $config = require __DIR__ . '/../config/config.php';
+        $securityConfig = $config['security_headers'] ?? [];
+        
+        // 合并配置
+        $options = array_merge([
+            'enabled' => $securityConfig['enabled'] ?? true,
+            'csp' => $securityConfig['csp'] ?? true,
+            'x_content_type_options' => $securityConfig['x_content_type_options'] ?? true,
+            'x_frame_options' => $securityConfig['x_frame_options'] ?? true,
+            'x_xss_protection' => $securityConfig['x_xss_protection'] ?? true,
+            'strict_transport_security' => $securityConfig['strict_transport_security'] ?? true,
+            'csp_policy' => $securityConfig['csp_policy'] ?? "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self';",
+            'hsts_max_age' => $securityConfig['hsts_max_age'] ?? 31536000, // 1年
+            'hsts_include_subdomains' => $securityConfig['hsts_include_subdomains'] ?? true,
+        ], $options);
+        
+        // 如果安全响应头被禁用，则跳过
+        if (!$options['enabled']) {
+            return;
+        }
+        
+        // 1. 内容安全策略（CSP）
+        if ($options['csp']) {
+            header("Content-Security-Policy: " . $options['csp_policy']);
+        }
+        
+        // 2. X-Content-Type-Options: nosniff
+        // 防止浏览器MIME类型嗅探，强制使用声明的Content-Type
+        if ($options['x_content_type_options']) {
+            header("X-Content-Type-Options: nosniff");
+        }
+        
+        // 3. X-Frame-Options: DENY
+        // 防止点击劫持攻击，禁止页面在iframe中加载
+        if ($options['x_frame_options']) {
+            $frameOptions = $securityConfig['x_frame_options_value'] ?? 'DENY';
+            header("X-Frame-Options: " . $frameOptions);
+        }
+        
+        // 4. X-XSS-Protection
+        // 启用浏览器的XSS过滤器（虽然现代浏览器已内置，但保留以兼容旧浏览器）
+        if ($options['x_xss_protection']) {
+            header("X-XSS-Protection: 1; mode=block");
+        }
+        
+        // 5. Strict-Transport-Security (HSTS)
+        // 仅在HTTPS环境下设置，强制使用HTTPS连接
+        if ($options['strict_transport_security']) {
+            $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') 
+                    || (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
+                    || (!empty($_SERVER['HTTP_X_FORWARDED_SSL']) && $_SERVER['HTTP_X_FORWARDED_SSL'] === 'on')
+                    || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443);
+            
+            if ($isHttps) {
+                $hstsValue = "max-age=" . $options['hsts_max_age'];
+                if ($options['hsts_include_subdomains']) {
+                    $hstsValue .= "; includeSubDomains";
+                }
+                header("Strict-Transport-Security: " . $hstsValue);
+            }
+        }
+        
+        // 6. Referrer-Policy（可选，但推荐）
+        $referrerPolicy = $securityConfig['referrer_policy'] ?? 'strict-origin-when-cross-origin';
+        if ($referrerPolicy) {
+            header("Referrer-Policy: " . $referrerPolicy);
+        }
+        
+        // 7. Permissions-Policy（可选，但推荐）
+        // 限制浏览器功能的使用，增强隐私和安全
+        $permissionsPolicy = $securityConfig['permissions_policy'] ?? "geolocation=(), microphone=(), camera=()";
+        if ($permissionsPolicy) {
+            header("Permissions-Policy: " . $permissionsPolicy);
+        }
+    }
+    
+    /**
+     * 验证密码强度
+     * @param string $password 待验证的密码
+     * @return array ['valid' => bool, 'message' => string] 验证结果
+     */
+    public static function validatePasswordStrength($password) {
+        // 读取配置
+        $config = require __DIR__ . '/../config/config.php';
+        $passwordConfig = $config['password_strength'] ?? [];
+        
+        // 默认配置
+        $minLength = $passwordConfig['min_length'] ?? 8;
+        $requireLetter = $passwordConfig['require_letter'] ?? true;
+        $requireNumber = $passwordConfig['require_number'] ?? true;
+        $requireSpecialChar = $passwordConfig['require_special_char'] ?? false;
+        $maxLength = $passwordConfig['max_length'] ?? 128;
+        
+        // 检查密码是否为空
+        if (empty($password)) {
+            return [
+                'valid' => false,
+                'message' => '密码不能为空'
+            ];
+        }
+        
+        // 检查最小长度
+        if (mb_strlen($password) < $minLength) {
+            return [
+                'valid' => false,
+                'message' => "密码长度至少为{$minLength}个字符"
+            ];
+        }
+        
+        // 检查最大长度
+        if (mb_strlen($password) > $maxLength) {
+            return [
+                'valid' => false,
+                'message' => "密码长度不能超过{$maxLength}个字符"
+            ];
+        }
+        
+        // 检查是否包含字母
+        if ($requireLetter && !preg_match('/[a-zA-Z]/', $password)) {
+            return [
+                'valid' => false,
+                'message' => '密码必须包含至少一个字母'
+            ];
+        }
+        
+        // 检查是否包含数字
+        if ($requireNumber && !preg_match('/[0-9]/', $password)) {
+            return [
+                'valid' => false,
+                'message' => '密码必须包含至少一个数字'
+            ];
+        }
+        
+        // 检查是否包含特殊字符
+        if ($requireSpecialChar && !preg_match('/[!@#$%^&*()_+\-=\[\]{};\':"\\|,.<>\/?]/', $password)) {
+            return [
+                'valid' => false,
+                'message' => '密码必须包含至少一个特殊字符（如!@#$%等）'
+            ];
+        }
+        
+        // 检查常见弱密码
+        $commonWeakPasswords = [
+            'password', '123456', '12345678', 'qwerty', 'abc123',
+            'password123', 'admin', '123456789', '1234567890',
+            'letmein', 'welcome', 'monkey', '1234567', 'sunshine',
+            'master', '123123', 'shadow', 'ashley', 'bailey'
+        ];
+        
+        if (in_array(strtolower($password), $commonWeakPasswords)) {
+            return [
+                'valid' => false,
+                'message' => '密码过于简单，请使用更复杂的密码'
+            ];
+        }
+        
+        // 检查是否包含用户名（如果提供）
+        if (isset($passwordConfig['check_username']) && $passwordConfig['check_username']) {
+            $username = $passwordConfig['username'] ?? '';
+            if (!empty($username) && stripos($password, $username) !== false) {
+                return [
+                    'valid' => false,
+                    'message' => '密码不能包含用户名'
+                ];
+            }
+        }
+        
+        return [
+            'valid' => true,
+            'message' => '密码强度符合要求'
+        ];
+    }
+    
+    /**
+     * 计算密码强度等级
+     * @param string $password 密码
+     * @return array ['level' => int, 'text' => string] 强度等级（0-4，0最弱，4最强）
+     */
+    public static function calculatePasswordStrength($password) {
+        $score = 0;
+        
+        // 长度评分
+        $length = mb_strlen($password);
+        if ($length >= 8) $score++;
+        if ($length >= 12) $score++;
+        if ($length >= 16) $score++;
+        
+        // 包含小写字母
+        if (preg_match('/[a-z]/', $password)) $score++;
+        
+        // 包含大写字母
+        if (preg_match('/[A-Z]/', $password)) $score++;
+        
+        // 包含数字
+        if (preg_match('/[0-9]/', $password)) $score++;
+        
+        // 包含特殊字符
+        if (preg_match('/[!@#$%^&*()_+\-=\[\]{};\':"\\|,.<>\/?]/', $password)) $score++;
+        
+        // 字符种类多样性
+        $charTypes = 0;
+        if (preg_match('/[a-z]/', $password)) $charTypes++;
+        if (preg_match('/[A-Z]/', $password)) $charTypes++;
+        if (preg_match('/[0-9]/', $password)) $charTypes++;
+        if (preg_match('/[!@#$%^&*()_+\-=\[\]{};\':"\\|,.<>\/?]/', $password)) $charTypes++;
+        
+        if ($charTypes >= 3) $score++;
+        if ($charTypes >= 4) $score++;
+        
+        // 限制最高分数为4
+        $level = min($score, 4);
+        
+        $levels = [
+            0 => '非常弱',
+            1 => '弱',
+            2 => '中等',
+            3 => '强',
+            4 => '非常强'
+        ];
+        
+        return [
+            'level' => $level,
+            'text' => $levels[$level] ?? '未知'
+        ];
+    }
+    
+    /**
+     * 获取密码要求说明
+     * @return array 密码要求数组
+     */
+    public static function getPasswordRequirements() {
+        $config = require __DIR__ . '/../config/config.php';
+        $passwordConfig = $config['password_strength'] ?? [];
+        
+        $minLength = $passwordConfig['min_length'] ?? 8;
+        $maxLength = $passwordConfig['max_length'] ?? 64;
+        $requireLetter = $passwordConfig['require_letter'] ?? true;
+        $requireNumber = $passwordConfig['require_number'] ?? true;
+        $requireSpecialChar = $passwordConfig['require_special_char'] ?? false;
+        
+        $requirements = [];
+        $requirements[] = "长度：{$minLength}-{$maxLength}个字符";
+        if ($requireLetter) {
+            $requirements[] = "必须包含字母";
+        }
+        if ($requireNumber) {
+            $requirements[] = "必须包含数字";
+        }
+        if ($requireSpecialChar) {
+            $requirements[] = "必须包含特殊字符";
+        }
+        
+        return $requirements;
+    }
+    
+    /**
+     * 获取密码要求详情（包括每个要求的满足状态）
+     * @param string $password 密码（可选，用于检查满足状态）
+     * @return array 密码要求详情数组，每个元素包含 ['text' => string, 'met' => bool]
+     */
+    public static function getPasswordRequirementsDetail($password = '') {
+        $config = require __DIR__ . '/../config/config.php';
+        $passwordConfig = $config['password_strength'] ?? [];
+        
+        $minLength = $passwordConfig['min_length'] ?? 8;
+        $maxLength = $passwordConfig['max_length'] ?? 64;
+        $requireLetter = $passwordConfig['require_letter'] ?? true;
+        $requireNumber = $passwordConfig['require_number'] ?? true;
+        $requireSpecialChar = $passwordConfig['require_special_char'] ?? false;
+        
+        $requirements = [];
+        
+        // 长度要求
+        $length = mb_strlen($password);
+        $lengthMet = $length >= $minLength && $length <= $maxLength;
+        $requirements[] = [
+            'text' => "长度：{$minLength}-{$maxLength}个字符",
+            'met' => $lengthMet,
+            'type' => 'length'
+        ];
+        
+        // 字母要求
+        if ($requireLetter) {
+            $hasLetter = !empty($password) && preg_match('/[a-zA-Z]/', $password);
+            $requirements[] = [
+                'text' => '必须包含字母',
+                'met' => $hasLetter,
+                'type' => 'letter'
+            ];
+        }
+        
+        // 数字要求
+        if ($requireNumber) {
+            $hasNumber = !empty($password) && preg_match('/[0-9]/', $password);
+            $requirements[] = [
+                'text' => '必须包含数字',
+                'met' => $hasNumber,
+                'type' => 'number'
+            ];
+        }
+        
+        // 特殊字符要求
+        if ($requireSpecialChar) {
+            $hasSpecialChar = !empty($password) && preg_match('/[!@#$%^&*()_+\-=\[\]{};\':"\\|,.<>\/?]/', $password);
+            $requirements[] = [
+                'text' => '必须包含特殊字符（如!@#$%等）',
+                'met' => $hasSpecialChar,
+                'type' => 'special'
+            ];
+        }
+        
+        return $requirements;
     }
 }
 

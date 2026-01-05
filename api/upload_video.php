@@ -181,21 +181,21 @@ try {
             $email->sendPhotoNotification($user['email'], $displayName, $photoCount);
         }
     } catch (Exception $e) {
-        error_log('发送录像提醒邮件失败：' . $e->getMessage());
+        Logger::error('发送录像提醒邮件失败：' . $e->getMessage());
     }
     
 } catch (Exception $e) {
     ob_clean();
-    error_log('上传错误：' . $e->getMessage());
-    error_log('上传错误堆栈：' . $e->getTraceAsString());
+    Logger::error('上传错误：' . $e->getMessage());
+    Logger::error('上传错误堆栈：' . $e->getTraceAsString());
     echo json_encode([
         'success' => false, 
         'message' => '上传失败，请检查录像格式和大小后重试'
     ]);
 } catch (Error $e) {
     ob_clean();
-    error_log('上传致命错误：' . $e->getMessage());
-    error_log('上传错误堆栈：' . $e->getTraceAsString());
+    Logger::error('上传致命错误：' . $e->getMessage());
+    Logger::error('上传错误堆栈：' . $e->getTraceAsString());
     echo json_encode([
         'success' => false, 
         'message' => '上传失败，请稍后重试'

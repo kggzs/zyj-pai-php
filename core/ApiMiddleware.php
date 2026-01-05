@@ -111,12 +111,12 @@ class ApiMiddleware {
     
     /**
      * 验证CSRF Token（仅用于需要CSRF保护的API）
+     * 支持从POST参数、GET参数或HTTP头（X-CSRF-Token）中读取token
      * @return array|null 如果验证失败返回错误信息，否则返回null
      */
     public function verifyCsrfToken() {
-        $token = $_POST['csrf_token'] ?? $_GET['csrf_token'] ?? '';
-        
-        if (!Security::verifyCsrfToken($token)) {
+        // Security::verifyCsrfToken() 会自动从多个来源读取token
+        if (!Security::verifyCsrfToken()) {
             http_response_code(403);
             return [
                 'success' => false,
@@ -130,7 +130,9 @@ class ApiMiddleware {
     /**
      * 执行所有安全检查
      * @param string $endpoint API端点
-     * @param array $options 选项 ['rate_limit' => bool, 'api_key' => bool, 'signature' => bool, 'csrf' => bool]
+     * @param array $options 选项 ['rate_limit' => bool, 'api_key' => bool, 'signature' => bool, 'csrf' => bool|'auto']
+     *                       如果 'csrf' 设置为 'auto' 或未设置，将根据请求方法自动决定：
+     *                       POST/PUT/DELETE 请求自动启用CSRF验证，GET请求不启用
      * @return array|null 如果验证失败返回错误信息，否则返回null
      */
     public function checkSecurity($endpoint, $options = []) {
@@ -138,10 +140,17 @@ class ApiMiddleware {
             'rate_limit' => true,
             'api_key' => false,
             'signature' => false,
-            'csrf' => false
+            'csrf' => 'auto'  // 默认自动检测请求方法
         ];
         
         $options = array_merge($defaultOptions, $options);
+        
+        // 自动检测CSRF保护需求（对于修改数据的请求）
+        if ($options['csrf'] === 'auto') {
+            $requestMethod = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+            // POST、PUT、DELETE 请求需要CSRF保护
+            $options['csrf'] = in_array(strtoupper($requestMethod), ['POST', 'PUT', 'DELETE']);
+        }
         
         // 频率限制
         if ($options['rate_limit']) {

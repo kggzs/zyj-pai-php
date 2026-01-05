@@ -96,7 +96,7 @@ try {
     exit;
     
 } catch (Exception $e) {
-    error_log('下载照片错误：' . $e->getMessage());
+    Logger::error('下载照片错误：' . $e->getMessage());
     http_response_code(500);
     die('下载失败');
 }

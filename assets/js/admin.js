@@ -484,7 +484,9 @@ function showUserDetail(userId) {
                                 <tbody>
                                     ${user.invites.map(invite => `
                                         <tr>
-                                            <td style="font-family: monospace;" title="拍摄链接码（8位）">${invite.invite_code}</td>
+                                            <td style="font-family: monospace;" title="拍摄链接码（8位）">
+                                                <a href="javascript:void(0)" onclick="goToPhotoManagement('${invite.invite_code}')" style="color: #5B9BD5; text-decoration: underline; cursor: pointer;">${invite.invite_code}</a>
+                                            </td>
                                             <td>${invite.create_time}</td>
                                             <td>${invite.expire_time || '无限制'}</td>
                                             <td>${invite.status == 1 ? '有效' : '失效'}</td>
@@ -620,6 +622,31 @@ function showUserDetail(userId) {
 function closeUserDetail() {
     document.getElementById('userDetailModal').classList.remove('active');
 }
+
+// 点击模态框外部（遮罩层）关闭模态框
+document.addEventListener('DOMContentLoaded', function() {
+    // 用户详情模态框
+    const userDetailModal = document.getElementById('userDetailModal');
+    if (userDetailModal) {
+        userDetailModal.addEventListener('click', function(e) {
+            // 如果点击的是遮罩层本身（不是modal-content），则关闭
+            if (e.target === userDetailModal) {
+                closeUserDetail();
+            }
+        });
+    }
+    
+    // 照片详情模态框
+    const photoDetailModal = document.getElementById('photoDetailModal');
+    if (photoDetailModal) {
+        photoDetailModal.addEventListener('click', function(e) {
+            // 如果点击的是遮罩层本身（不是modal-content），则关闭
+            if (e.target === photoDetailModal) {
+                closePhotoDetail();
+            }
+        });
+    }
+});
 
 // 解析User-Agent获取浏览器信息
 function parseUserAgent(ua) {
@@ -828,127 +855,441 @@ function generateAdminExifInfo(photo) {
 }
 
 function searchPhotos() {
-    currentPhotoSearch = document.getElementById('photoUserSearch').value.trim();
+    const searchValue = document.getElementById('photoUserSearch').value.trim();
+    currentPhotoSearch = searchValue;
+    // 清除URL hash
+    window.location.hash = '';
     loadPhotos(1);
 }
 
 function resetPhotoSearch() {
     document.getElementById('photoUserSearch').value = '';
     currentPhotoSearch = '';
+    // 清除URL hash
+    window.location.hash = '';
     loadPhotos(1);
+}
+
+// 跳转到照片管理页面并筛选拍摄码
+function goToPhotoManagement(inviteCode) {
+    // 先关闭用户详情模态框
+    closeUserDetail();
+    // 切换到照片管理页面
+    showSection('photos');
+    // 设置搜索参数（将拍摄码填入搜索框）
+    currentPhotoSearch = inviteCode;
+    document.getElementById('photoUserSearch').value = inviteCode;
+    // 清除URL hash
+    window.location.hash = '';
+    // 延迟加载，确保页面切换完成
+    setTimeout(() => {
+        loadPhotos(1);
+    }, 100);
+}
+
+// 根据拍摄码加载照片
+function loadPhotosByInviteCode(inviteCode) {
+    fetch(`api/admin/get_all_photos.php?page=1&page_size=10000&invite_code=${encodeURIComponent(inviteCode)}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.success && data.data.list.length > 0) {
+                // 显示筛选结果
+                displayPhotos(data.data.list, `筛选结果：拍摄链接码 ${inviteCode}`);
+            } else {
+                document.getElementById('photoList').innerHTML = '<div style="text-align:center; padding:40px; color:#999;">该拍摄链接码下暂无照片</div>';
+            }
+        })
+        .catch(err => {
+            console.error('加载照片失败:', err);
+            document.getElementById('photoList').innerHTML = '<div style="text-align:center; padding:40px; color:#f00;">加载失败，请重试</div>';
+        });
 }
 
 function loadPhotos(page = 1) {
     currentPhotoPage = page;
-    const searchParam = currentPhotoSearch ? `&username=${encodeURIComponent(currentPhotoSearch)}` : '';
-    fetch(`api/admin/get_all_photos.php?page=${page}&page_size=18${searchParam}`)
-        .then(res => res.json())
-        .then(data => {
+    
+    // 检查是否有搜索条件
+    const searchValue = currentPhotoSearch ? currentPhotoSearch.trim() : '';
+    
+    // 如果有搜索条件
+    if (searchValue) {
+        // 如果搜索值是8位字母数字，按拍摄码搜索
+        if (/^[a-zA-Z0-9]{8}$/.test(searchValue)) {
+            // 按拍摄码搜索
+            fetch(`api/admin/get_all_photos.php?page=1&page_size=10000&invite_code=${encodeURIComponent(searchValue)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.data.list.length > 0) {
+                        displayPhotos(data.data.list, `搜索结果：拍摄链接码 ${searchValue}`);
+                    } else {
+                        document.getElementById('photoList').innerHTML = '<div style="text-align:center; padding:40px; color:#999;">未找到该拍摄链接码的照片</div>';
+                    }
+                })
+                .catch(err => {
+                    console.error('搜索照片失败:', err);
+                    document.getElementById('photoList').innerHTML = '<div style="text-align:center; padding:40px; color:#f00;">搜索失败，请重试</div>';
+                });
+            return;
+        } else {
+            // 按用户名搜索
+            fetch(`api/admin/get_all_photos.php?page=1&page_size=10000&username=${encodeURIComponent(searchValue)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.data.list.length > 0) {
+                        displayPhotos(data.data.list, `搜索结果：用户名 "${searchValue}"`);
+                    } else {
+                        document.getElementById('photoList').innerHTML = '<div style="text-align:center; padding:40px; color:#999;">未找到该用户的照片</div>';
+                    }
+                })
+                .catch(err => {
+                    console.error('搜索照片失败:', err);
+                    document.getElementById('photoList').innerHTML = '<div style="text-align:center; padding:40px; color:#f00;">搜索失败，请重试</div>';
+                });
+            return;
+        }
+    }
+    
+    // 没有搜索条件时，先加载用户列表（懒加载）
+    fetch('api/admin/get_users_with_photos.php', {
+        method: 'GET',
+        cache: 'no-cache',
+        headers: {
+            'Cache-Control': 'no-cache'
+        }
+    })
+        .then(res => {
+            // 检查响应状态
+            if (!res.ok) {
+                throw new Error(`HTTP错误: ${res.status} ${res.statusText}`);
+            }
+            // 先获取文本，以便调试
+            return res.text();
+        })
+        .then(text => {
+            // 尝试解析JSON
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch (e) {
+                console.error('JSON解析失败，响应内容:', text.substring(0, 500));
+                throw new Error('服务器返回的不是有效的JSON格式: ' + e.message);
+            }
+            
             if (data.success) {
-                if (data.data.list.length === 0) {
-                    document.getElementById('photoList').innerHTML = '<div style="text-align:center; padding:40px; color:#999;">暂无照片</div>';
+                if (!data.data || data.data.length === 0) {
+                    document.getElementById('photoList').innerHTML = '<div style="text-align:center; padding:40px; color:#999;">暂无用户照片</div>';
                     return;
                 }
-                const html = data.data.list.map(photo => {
-                    const thumbnailUrl = photo.thumbnail_url || '';
-                    const photoId = photo.photo_id || photo.id;
-                    const fileType = photo.file_type || 'photo';
-                    const videoDuration = photo.video_duration || null;
-                    const uploadTime = photo.upload_time || '';
-                    const formatTime = uploadTime ? uploadTime.replace(/:\d{2}$/, '').replace(' ', ' ') : '未知';
-                    const uploadUa = photo.upload_ua || '';
-                    const browserInfo = parseUserAgent(uploadUa);
-                    const deviceInfo = parseDeviceModel(uploadUa);
+                
+                // 生成用户列表HTML（使用类似用户端的样式）
+                let html = '';
+                data.data.forEach((user, index) => {
+                    const userGroupId = `user-group-${index}`;
+                    const isUserDeleted = user.deleted_at && user.deleted_at !== null;
+                    const deletedBadge = isUserDeleted ? '<span class="deleted-badge" style="margin-left: 10px; padding: 2px 6px; background: #dc3545; color: white; border-radius: 3px; font-size: 11px;">用户已删除</span>' : '';
                     
-                    // 检查用户是否已删除（软删除）
-                    const isUserDeleted = photo.deleted_at && photo.deleted_at !== null;
-                    const deletedBadge = isUserDeleted ? '<span class="deleted-badge">用户已删除</span>' : '';
-                    
-                    // 获取标签
-                    const tags = photo.tags || [];
-                    const tagsHtml = tags.length > 0 ? 
-                        '<div class="photo-tags-admin">' + tags.map(tag => `<span class="photo-tag-admin">${tag.name}</span>`).join('') + '</div>' : 
-                        '<div class="photo-tags-admin"><span style="color: #999; font-size: 11px;">无标签</span></div>';
-                    
-                    // 邀请码信息
-                    const inviteCode = photo.invite_code || '未知';
-                    const inviteLabel = photo.invite_label || '';
-                    
-                    // 列表中统一使用缩略图图片，保证卡片高度一致
-                    // 如果是视频类型，叠加一个小的 🎥 标记和时长
-                    const isVideo = fileType === 'video';
-                    const durationText = isVideo && videoDuration ? ` ${Math.floor(videoDuration)}秒` : '';
-                    let mediaHtml = '';
-                    if (thumbnailUrl) {
-                        // 图片需要position: absolute才能正确填充使用padding-bottom创建的容器
-                        mediaHtml = `
-                            <img src="${thumbnailUrl}" alt="${isVideo ? '视频缩略图' : '照片'}"
-                                 style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; display: block;"
-                                 onerror="this.onerror=null; this.style.display='none'; this.parentElement.innerHTML='<div style=\'position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#f0f0f0; color:#999;\'>图片加载失败</div>';">
-                            ${isVideo ? `<div style="position:absolute; top:8px; right:8px; background:rgba(0,0,0,0.8); color:#fff; padding:4px 8px; border-radius:4px; font-size:12px; font-weight:bold; z-index:10; white-space:nowrap;">🎥${durationText}</div>` : ''}
-                        `;
-                    } else {
-                        mediaHtml = `<div style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#f0f0f0; color:#999;">加载中...</div>`;
-                    }
-                    
-                    return `
-                        <div class="photo-item">
-                            <div class="photo-user-header">
-                                ${photo.user_name || '未知用户'}
-                                ${deletedBadge}
+                    html += `
+                        <div class="invite-group" style="margin-bottom: 15px; width: 100%;">
+                            <div class="invite-group-header" onclick="toggleUserGroupAndLoad('${userGroupId}', ${user.user_id}, '${escapeHtml(user.user_name || '未知用户')}')" style="padding: 12px 20px;">
+                                <span style="display: flex; align-items: center; gap: 12px; flex: 1; width: 100%;">
+                                    <span style="font-weight: bold; font-size: 16px; color: #333; flex: 1; min-width: 0;">
+                                        👤 <span style="font-size: 18px;">${escapeHtml(user.user_name || '未知用户')}</span>${deletedBadge}
+                                        <span style="color: #999; font-weight: normal; font-size: 13px; margin-left: 12px;">
+                                            用户ID: <span style="font-family: monospace; color: #5B9BD5;">${user.user_id}</span> | 
+                                            照片数量: <span style="color: #5B9BD5; font-weight: 600;">${user.photo_count}</span> 张
+                                        </span>
+                                    </span>
+                                </span>
+                                <span class="expand-icon" id="${userGroupId}-icon" style="font-size: 16px; flex-shrink: 0;">▼</span>
                             </div>
-                            <div class="photo-image-wrapper">
-                                ${mediaHtml}
-                            </div>
-                            <div class="photo-info">
-                                <div class="info-row">
-                                    <span class="info-label">拍摄链接码:</span> 
-                                    ${inviteLabel ? `<span style="margin-right: 6px; padding: 2px 6px; background: #5B9BD5; color: white; border-radius: 3px; font-size: 11px;">${inviteLabel}</span>` : ''}
-                                    <span style="font-family: monospace;" title="拍摄链接码（8位）">${inviteCode}</span>
-                                </div>
-                                <div class="info-row">
-                                    <span class="info-label">时间:</span> ${formatTime}
-                                </div>
-                                <div class="info-row">
-                                    <span class="info-label">IP:</span> ${photo.upload_ip || '未知'}
-                                </div>
-                                <div class="info-row" title="${uploadUa}">
-                                    <span class="info-label">浏览器:</span> ${browserInfo}
-                                </div>
-                                <div class="info-row" title="${uploadUa}">
-                                    <span class="info-label">设备:</span> ${deviceInfo}
-                                </div>
-                                <div class="info-row">
-                                    <span class="info-label">标签:</span>
-                                    ${tagsHtml}
-                                </div>
-                                ${generateAdminExifInfo(photo)}
-                            </div>
-                            <div class="photo-actions">
-                                <a href="javascript:void(0)" onclick="showPhotoDetail(${photoId})" style="margin-right: 10px;">详情</a>
-                                <a href="api/download_photo.php?id=${photoId}&type=original" download>下载</a>
-                                <a href="javascript:void(0)" onclick="adminDeletePhoto(${photoId})" class="delete-btn">删除</a>
+                            <div class="invite-group-content" id="${userGroupId}" style="display: none;">
+                                <div style="text-align: center; padding: 20px; color: #999;">加载中...</div>
                             </div>
                         </div>
                     `;
-                }).join('');
-                document.getElementById('photoList').innerHTML = html;
+                });
                 
-                // 分页
-                const total = data.data.total;
-                const pageSize = data.data.page_size;
-                const totalPages = Math.ceil(total / pageSize);
-                let paginationHtml = '';
-                if (totalPages > 1) {
-                    paginationHtml = '<div class="pagination">';
-                    for (let i = 1; i <= totalPages; i++) {
-                        paginationHtml += `<button class="${i == page ? 'active' : ''}" onclick="loadPhotos(${i})">${i}</button>`;
-                    }
-                    paginationHtml += '</div>';
-                }
-                document.getElementById('photoPagination').innerHTML = paginationHtml;
+                document.getElementById('photoList').innerHTML = html;
+                document.getElementById('photoPagination').innerHTML = '';
+            } else {
+                document.getElementById('photoList').innerHTML = '<div style="text-align:center; padding:40px; color:#f00;">加载用户列表失败: ' + (data.message || '未知错误') + '</div>';
             }
+        })
+        .catch(err => {
+            console.error('加载用户列表失败:', err);
+            document.getElementById('photoList').innerHTML = '<div style="text-align:center; padding:40px; color:#f00;">加载失败: ' + escapeHtml(err.message) + '<br><small>请检查控制台获取详细信息</small></div>';
         });
+}
+
+// 切换用户组并加载照片
+function toggleUserGroupAndLoad(groupId, userId, userName) {
+    const content = document.getElementById(groupId);
+    const icon = document.getElementById(groupId + '-icon');
+    
+    // 如果已经展开，直接切换
+    if (content.style.display !== 'none') {
+        content.style.display = 'none';
+        icon.textContent = '▼';
+        return;
+    }
+    
+    // 展开并加载照片
+    content.style.display = 'block';
+    icon.textContent = '▲';
+    
+    // 检查是否已经加载过
+    if (content.innerHTML.includes('加载中...') || content.innerHTML.trim() === '') {
+        // 加载该用户的照片
+        fetch(`api/admin/get_all_photos.php?page=1&page_size=10000&user_id=${userId}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.data.list.length > 0) {
+                    displayUserPhotos(content, data.data.list, userName);
+                } else {
+                    content.innerHTML = '<div style="text-align:center; padding:20px; color:#999;">该用户暂无照片</div>';
+                }
+            })
+            .catch(err => {
+                console.error('加载照片失败:', err);
+                content.innerHTML = '<div style="text-align:center; padding:20px; color:#f00;">加载失败，请重试</div>';
+            });
+    }
+}
+
+// 显示用户照片
+function displayUserPhotos(container, photos, userName) {
+    // 按拍摄码分组
+    const groupedByInvite = {};
+    photos.forEach(photo => {
+        const inviteCode = photo.invite_code || '未知';
+        if (!groupedByInvite[inviteCode]) {
+            groupedByInvite[inviteCode] = [];
+        }
+        groupedByInvite[inviteCode].push(photo);
+    });
+    
+    let html = '';
+    let inviteIndex = 0;
+    
+    // 按拍摄码排序
+    const sortedInviteCodes = Object.keys(groupedByInvite).sort();
+    
+    for (const inviteCode of sortedInviteCodes) {
+        const photos = groupedByInvite[inviteCode];
+        const inviteGroupId = `invite-group-${inviteIndex}`;
+        const inviteLabel = photos[0].invite_label || '';
+        
+        html += `
+            <div class="invite-group" style="margin-bottom: 12px;">
+                <div class="invite-group-header" onclick="toggleInviteGroup('${inviteGroupId}')">
+                    <span style="display: flex; align-items: center; gap: 10px; flex: 1;">
+                        <span style="font-weight: bold; font-size: 14px; color: #333;">
+                            ${inviteLabel ? `<span style="padding: 2px 8px; background: #5B9BD5; color: white; border-radius: 4px; font-size: 12px; margin-right: 8px;">${inviteLabel}</span>` : ''}
+                            拍摄链接码: <span style="color: #5B9BD5;">${inviteCode}</span> <span style="color: #999; font-weight: normal; font-size: 12px;">(${photos.length} 张)</span>
+                        </span>
+                    </span>
+                    <span class="expand-icon" id="${inviteGroupId}-icon">▼</span>
+                </div>
+                <div class="invite-group-content" id="${inviteGroupId}" style="display: none;">
+                    <div class="photo-grid">
+        `;
+        
+        // 显示照片（使用用户端样式）
+        photos.forEach(photo => {
+            const thumbnailUrl = photo.thumbnail_url || '';
+            const photoId = photo.photo_id || photo.id;
+            const fileType = photo.file_type || 'photo';
+            const videoDuration = photo.video_duration || null;
+            const uploadTime = photo.upload_time || '';
+            const formatTime = uploadTime ? uploadTime.replace(/:\d{2}$/, '').replace(' ', ' ') : '未知';
+            
+            const isVideo = fileType === 'video';
+            const durationText = isVideo && videoDuration ? ` ${Math.floor(videoDuration)}秒` : '';
+            let mediaHtml = '';
+            if (thumbnailUrl) {
+                mediaHtml = `
+                    <img src="${thumbnailUrl}" alt="${isVideo ? '视频缩略图' : '照片'}"
+                         style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; display: block;"
+                         onerror="this.onerror=null; this.style.display='none'; this.parentElement.innerHTML='<div style=\'position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#f0f0f0; color:#999;\'>图片加载失败</div>';">
+                    ${isVideo ? `<div style="position:absolute; top:8px; right:8px; background:rgba(0,0,0,0.8); color:#fff; padding:4px 8px; border-radius:4px; font-size:12px; font-weight:bold; z-index:10; white-space:nowrap;">🎥${durationText}</div>` : ''}
+                `;
+            } else {
+                mediaHtml = `<div style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#f0f0f0; color:#999;">加载中...</div>`;
+            }
+            
+            html += `
+            <div class="photo-item">
+                <div class="photo-image-wrapper" onclick="showPhotoDetail(${photoId})" style="cursor: pointer;">
+                    ${mediaHtml}
+                </div>
+                <div class="photo-info">
+                    <div class="photo-info-item">时间: ${formatTime}</div>
+                </div>
+                <div class="photo-actions">
+                    <a href="javascript:void(0)" onclick="showPhotoDetail(${photoId})">详情</a>
+                    <a href="api/download_photo.php?id=${photoId}&type=original" download>下载</a>
+                    <a href="javascript:void(0)" onclick="adminDeletePhoto(${photoId})" class="delete-btn">删除</a>
+                </div>
+            </div>
+            `;
+        });
+        
+        html += `
+                    </div>
+                </div>
+            </div>
+        `;
+        inviteIndex++;
+    }
+    
+    container.innerHTML = html;
+}
+
+// 显示照片（用于筛选结果）
+function displayPhotos(photos, title) {
+    // 按用户名和拍摄码分组
+    const groupedByUser = {};
+    photos.forEach(photo => {
+        const userName = photo.user_name || '未知用户';
+        const inviteCode = photo.invite_code || '未知';
+        
+        if (!groupedByUser[userName]) {
+            groupedByUser[userName] = {};
+        }
+        if (!groupedByUser[userName][inviteCode]) {
+            groupedByUser[userName][inviteCode] = [];
+        }
+        groupedByUser[userName][inviteCode].push(photo);
+    });
+    
+    let html = `<div style="margin-bottom: 20px; padding: 12px; background: #e3f2fd; border-radius: 6px; color: #1976d2; font-weight: bold;">${title}</div>`;
+    
+    const sortedUserNames = Object.keys(groupedByUser).sort();
+    let userIndex = 0;
+    
+    for (const userName of sortedUserNames) {
+        const userGroupId = `user-group-${userIndex}`;
+        let totalPhotosForUser = 0;
+        Object.values(groupedByUser[userName]).forEach(photos => {
+            totalPhotosForUser += photos.length;
+        });
+        
+        html += `
+            <div class="user-group" style="margin-bottom: 20px; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
+                <div class="user-group-header" onclick="toggleUserGroup('${userGroupId}')" style="padding: 12px 16px; background: #f5f5f5; cursor: pointer; display: flex; align-items: center; justify-content: space-between;">
+                    <span style="font-weight: bold; font-size: 16px; color: #333;">
+                        👤 ${userName} <span style="color: #999; font-weight: normal; font-size: 14px; margin-left: 10px;">(${totalPhotosForUser} 张)</span>
+                    </span>
+                    <span class="expand-icon" id="${userGroupId}-icon">▼</span>
+                </div>
+                <div class="user-group-content" id="${userGroupId}" style="display: none; padding: 16px;">
+        `;
+        
+        const sortedInviteCodes = Object.keys(groupedByUser[userName]).sort();
+        let inviteIndex = 0;
+        
+        for (const inviteCode of sortedInviteCodes) {
+            const photos = groupedByUser[userName][inviteCode];
+            const inviteGroupId = `invite-group-${userIndex}-${inviteIndex}`;
+            const inviteLabel = photos[0].invite_label || '';
+            
+            html += `
+                <div class="invite-group" style="margin-bottom: 12px;">
+                    <div class="invite-group-header" onclick="toggleInviteGroup('${inviteGroupId}')">
+                        <span style="display: flex; align-items: center; gap: 10px; flex: 1;">
+                            <span style="font-weight: bold; font-size: 14px; color: #333;">
+                                ${inviteLabel ? `<span style="padding: 2px 8px; background: #5B9BD5; color: white; border-radius: 4px; font-size: 12px; margin-right: 8px;">${inviteLabel}</span>` : ''}
+                                拍摄链接码: <span style="color: #5B9BD5;">${inviteCode}</span> <span style="color: #999; font-weight: normal; font-size: 12px;">(${photos.length} 张)</span>
+                            </span>
+                        </span>
+                        <span class="expand-icon" id="${inviteGroupId}-icon">▼</span>
+                    </div>
+                    <div class="invite-group-content" id="${inviteGroupId}" style="display: none;">
+                        <div class="photo-grid">
+            `;
+            
+            photos.forEach(photo => {
+                const thumbnailUrl = photo.thumbnail_url || '';
+                const photoId = photo.photo_id || photo.id;
+                const fileType = photo.file_type || 'photo';
+                const videoDuration = photo.video_duration || null;
+                const uploadTime = photo.upload_time || '';
+                const formatTime = uploadTime ? uploadTime.replace(/:\d{2}$/, '').replace(' ', ' ') : '未知';
+                
+                const isVideo = fileType === 'video';
+                const durationText = isVideo && videoDuration ? ` ${Math.floor(videoDuration)}秒` : '';
+                let mediaHtml = '';
+                if (thumbnailUrl) {
+                    mediaHtml = `
+                        <img src="${thumbnailUrl}" alt="${isVideo ? '视频缩略图' : '照片'}"
+                             style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; display: block;"
+                             onerror="this.onerror=null; this.style.display='none'; this.parentElement.innerHTML='<div style=\'position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#f0f0f0; color:#999;\'>图片加载失败</div>';">
+                        ${isVideo ? `<div style="position:absolute; top:8px; right:8px; background:rgba(0,0,0,0.8); color:#fff; padding:4px 8px; border-radius:4px; font-size:12px; font-weight:bold; z-index:10; white-space:nowrap;">🎥${durationText}</div>` : ''}
+                    `;
+                } else {
+                    mediaHtml = `<div style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#f0f0f0; color:#999;">加载中...</div>`;
+                }
+                
+                html += `
+                <div class="photo-item">
+                    <div class="photo-image-wrapper" onclick="showPhotoDetail(${photoId})" style="cursor: pointer;">
+                        ${mediaHtml}
+                    </div>
+                    <div class="photo-info">
+                        <div class="photo-info-item">时间: ${formatTime}</div>
+                    </div>
+                    <div class="photo-actions">
+                        <a href="javascript:void(0)" onclick="showPhotoDetail(${photoId})">详情</a>
+                        <a href="api/download_photo.php?id=${photoId}&type=original" download>下载</a>
+                        <a href="javascript:void(0)" onclick="adminDeletePhoto(${photoId})" class="delete-btn">删除</a>
+                    </div>
+                </div>
+                `;
+            });
+            
+            html += `
+                        </div>
+                    </div>
+                </div>
+            `;
+            inviteIndex++;
+        }
+        
+        html += `
+                </div>
+            </div>
+        `;
+        userIndex++;
+    }
+    
+    document.getElementById('photoList').innerHTML = html;
+    document.getElementById('photoPagination').innerHTML = '';
+}
+
+// 切换用户组展开/收起
+function toggleUserGroup(groupId) {
+    const content = document.getElementById(groupId);
+    const icon = document.getElementById(groupId + '-icon');
+    if (content.style.display === 'none') {
+        content.style.display = 'block';
+        icon.textContent = '▲';
+    } else {
+        content.style.display = 'none';
+        icon.textContent = '▼';
+    }
+}
+
+// 切换拍摄码组展开/收起
+function toggleInviteGroup(groupId) {
+    const content = document.getElementById(groupId);
+    const icon = document.getElementById(groupId + '-icon');
+    if (content.style.display === 'none') {
+        content.style.display = 'block';
+        icon.textContent = '▲';
+    } else {
+        content.style.display = 'none';
+        icon.textContent = '▼';
+    }
 }
 
 // 管理员删除照片（硬删除，删除文件）
@@ -1103,7 +1444,9 @@ function displayPhotoDetail(photo) {
     `;
     
     content.innerHTML = html;
-    modal.style.display = 'block';
+    // 统一使用classList方式，与用户详情模态框保持一致
+    modal.classList.add('active');
+    modal.style.display = 'block'; // 兼容旧代码
 }
 
 // 生成完整的EXIF信息
@@ -1199,7 +1542,9 @@ function generateFullExifInfo(photo) {
 function closePhotoDetail() {
     const modal = document.getElementById('photoDetailModal');
     if (modal) {
-        modal.style.display = 'none';
+        // 统一使用classList方式，与用户详情模态框保持一致
+        modal.classList.remove('active');
+        modal.style.display = 'none'; // 兼容旧代码，确保关闭
     }
 }
 

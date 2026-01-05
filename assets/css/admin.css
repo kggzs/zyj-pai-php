@@ -856,21 +856,84 @@ tr:last-child td {
 }
 
 #photoList {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 15px;
+    display: block;
+    width: 100%;
     margin-top: 20px;
 }
 
+/* 当显示照片网格时使用grid布局 */
+#photoList .photo-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+}
+
+/* 邀请码分组样式（与用户端一致） */
+.invite-group {
+    width: 100%;
+    max-width: 100%;
+    margin-bottom: 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+    display: block;
+    clear: both;
+    box-sizing: border-box;
+}
+
+.invite-group-header {
+    cursor: pointer;
+    padding: 12px 20px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: background 0.2s;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.invite-group-header:hover {
+    background: #e9ecef;
+}
+
+.invite-group-content {
+    padding: 12px;
+    background: #fff;
+}
+
+.expand-icon {
+    font-size: 12px;
+    color: #666;
+    transition: transform 0.2s;
+}
+
+/* 照片网格布局（与用户端一致） */
+.photo-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+}
+
 @media (max-width: 1200px) {
-    #photoList {
-        grid-template-columns: repeat(2, 1fr);
+    .photo-grid {
+        grid-template-columns: repeat(5, 1fr);
+        gap: 10px;
+    }
+}
+
+@media (max-width: 900px) {
+    .photo-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
     }
 }
 
 @media (max-width: 768px) {
-    #photoList {
-        grid-template-columns: repeat(1, 1fr);
+    .photo-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
     }
 }
 
@@ -880,15 +943,23 @@ tr:last-child td {
     overflow: hidden;
     background: #fff;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
     display: flex;
     flex-direction: column;
 }
 
+.photo-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
 .photo-image-wrapper {
     width: 100%;
-    padding-top: 100%;
+    padding-bottom: 100%;
     position: relative;
-    background: #f8f9fa;
+    overflow: hidden;
+    background: #f0f0f0;
 }
 
 .photo-image-wrapper img {
@@ -898,12 +969,22 @@ tr:last-child td {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    display: block;
 }
 
 .photo-info {
-    padding: 10px;
-    font-size: 12px;
+    padding: 4px 6px;
+    background: #f8f9fa;
+    font-size: 9px;
     color: #666;
+    line-height: 1.3;
+}
+
+.photo-info-item {
+    margin: 1px 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .photo-info .info-row {
@@ -940,20 +1021,32 @@ tr:last-child td {
 }
 
 .photo-actions {
-    padding: 10px;
+    padding: 4px 6px;
+    text-align: center;
+    background: #fff;
+    border-top: 1px solid #eee;
     display: flex;
-    gap: 10px;
+    gap: 3px;
+    justify-content: center;
 }
 
 .photo-actions a {
-    flex: 1;
-    text-align: center;
-    padding: 5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3px 8px;
     background: #5B9BD5;
     color: white;
     text-decoration: none;
-    border-radius: 4px;
-    font-size: 12px;
+    border-radius: 3px;
+    font-size: 11px;
+    line-height: 1;
+    transition: background 0.2s;
+    min-height: 20px;
+}
+
+.photo-actions a:hover {
+    background: #4A8BC2;
 }
 
 .photo-actions a.delete-btn {

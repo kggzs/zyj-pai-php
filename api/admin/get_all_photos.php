@@ -83,10 +83,17 @@ function generateThumbnailBase64($imagePath, $maxSize = 150) {
 
 try {
     $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-    $pageSize = isset($_GET['page_size']) ? (int)$_GET['page_size'] : 20;
+    $pageSize = isset($_GET['page_size']) ? (int)$_GET['page_size'] : null;
     $userId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : null;
     $username = isset($_GET['username']) ? trim($_GET['username']) : null;
     $inviteCode = isset($_GET['invite_code']) ? trim($_GET['invite_code']) : null;
+    
+    // 如果没有指定page_size，默认加载所有照片（用于分组显示）
+    if ($pageSize === null || $pageSize < 1) {
+        $pageSize = 10000; // 足够大的值，确保加载所有照片用于分组
+    } elseif ($pageSize > 10000) {
+        $pageSize = 10000; // 限制最大值为10000，防止性能问题
+    }
     
     // 记录调试信息
     error_log('get_all_photos.php: 查询照片列表, page: ' . $page . ', pageSize: ' . $pageSize . ', userId: ' . ($userId ?? 'NULL') . ', username: ' . ($username ?? 'NULL') . ', inviteCode: ' . ($inviteCode ?? 'NULL'));

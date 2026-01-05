@@ -57,7 +57,7 @@ if (!$adminModel->isLoggedIn()) {
             <div id="photos" class="section">
                 <h2>照片管理</h2>
                 <div class="search-box">
-                    <input type="text" id="photoUserSearch" placeholder="搜索用户名">
+                    <input type="text" id="photoUserSearch" placeholder="搜索用户名或拍摄链接码（8位）">
                     <button onclick="searchPhotos()">搜索</button>
                     <button onclick="resetPhotoSearch()">重置</button>
                 </div>

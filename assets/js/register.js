@@ -163,11 +163,21 @@ async function resendVerificationCode() {
 form.addEventListener('submit', async (e) => {
     e.preventDefault();
     
+    // 检查是否同意用户协议
+    const agreeTerms = document.getElementById('agreeTerms');
+    if (!agreeTerms || !agreeTerms.checked) {
+        showMessage('请先阅读并同意《用户服务协议》', 'error');
+        return;
+    }
+    
     const formData = new FormData(form);
     
     if (inviteCode) {
         formData.append('invite_code', inviteCode);
     }
+    
+    // 添加协议同意标记
+    formData.append('agree_terms', '1');
     
     try {
         const response = await fetch('api/register.php', {
@@ -208,6 +218,77 @@ form.addEventListener('submit', async (e) => {
     } catch (err) {
         console.error('注册错误：', err);
         showMessage('注册失败：' + (err.message || '请重试'), 'error');
+    }
+});
+
+// 显示用户协议
+function showUserAgreement() {
+    const modal = document.getElementById('agreementModal');
+    const content = document.getElementById('agreementContent');
+    
+    if (!modal || !content) {
+        // 如果模态框不存在，在新窗口打开
+        window.open('terms/user_agreement.php', '_blank', 'width=900,height=700,scrollbars=yes');
+        return;
+    }
+    
+    // 加载协议内容
+    fetch('terms/user_agreement.php')
+        .then(res => {
+            if (!res.ok) {
+                throw new Error('HTTP ' + res.status);
+            }
+            return res.text();
+        })
+        .then(html => {
+            // 提取body内容，但保留样式
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const bodyContent = doc.body.innerHTML;
+            
+            // 移除body标签的样式，保留内容样式
+            content.innerHTML = bodyContent;
+            modal.style.display = 'block';
+            
+            // 滚动到顶部
+            const modalContent = modal.querySelector('.modal-content');
+            if (modalContent) {
+                modalContent.scrollTop = 0;
+            }
+        })
+        .catch(err => {
+            console.error('加载协议失败:', err);
+            content.innerHTML = '<div style="text-align: center; padding: 40px;"><p style="color: red; margin-bottom: 20px;">加载协议失败，请刷新页面重试</p><p style="color: #999; font-size: 14px;">错误信息：' + err.message + '</p><button onclick="window.open(\'terms/user_agreement.php\', \'_blank\')" class="btn" style="width: auto; padding: 10px 20px; margin-top: 20px;">在新窗口打开协议</button></div>';
+            modal.style.display = 'block';
+        });
+}
+
+// 关闭协议模态框
+function closeAgreementModal() {
+    const modal = document.getElementById('agreementModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// 同意协议
+function acceptAgreement() {
+    const agreeTerms = document.getElementById('agreeTerms');
+    if (agreeTerms) {
+        agreeTerms.checked = true;
+    }
+    closeAgreementModal();
+}
+
+// 点击模态框外部关闭
+document.addEventListener('DOMContentLoaded', function() {
+    const agreementModal = document.getElementById('agreementModal');
+    if (agreementModal) {
+        agreementModal.addEventListener('click', function(e) {
+            if (e.target === agreementModal) {
+                closeAgreementModal();
+            }
+        });
     }
 });
 

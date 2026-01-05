@@ -917,8 +917,8 @@ function loadPhotos(page = 1) {
         if (/^[a-zA-Z0-9]{8}$/.test(searchValue)) {
             // 按拍摄码搜索
             fetch(`api/admin/get_all_photos.php?page=1&page_size=10000&invite_code=${encodeURIComponent(searchValue)}`)
-                .then(res => res.json())
-                .then(data => {
+        .then(res => res.json())
+        .then(data => {
                     if (data.success && data.data.list.length > 0) {
                         displayPhotos(data.data.list, `搜索结果：拍摄链接码 ${searchValue}`);
                     } else {
@@ -1096,48 +1096,48 @@ function displayUserPhotos(container, photos, userName) {
         
         // 显示照片（使用用户端样式）
         photos.forEach(photo => {
-            const thumbnailUrl = photo.thumbnail_url || '';
-            const photoId = photo.photo_id || photo.id;
-            const fileType = photo.file_type || 'photo';
-            const videoDuration = photo.video_duration || null;
-            const uploadTime = photo.upload_time || '';
-            const formatTime = uploadTime ? uploadTime.replace(/:\d{2}$/, '').replace(' ', ' ') : '未知';
+                    const thumbnailUrl = photo.thumbnail_url || '';
+                    const photoId = photo.photo_id || photo.id;
+                    const fileType = photo.file_type || 'photo';
+                    const videoDuration = photo.video_duration || null;
+                    const uploadTime = photo.upload_time || '';
+                    const formatTime = uploadTime ? uploadTime.replace(/:\d{2}$/, '').replace(' ', ' ') : '未知';
             
-            const isVideo = fileType === 'video';
-            const durationText = isVideo && videoDuration ? ` ${Math.floor(videoDuration)}秒` : '';
-            let mediaHtml = '';
-            if (thumbnailUrl) {
-                mediaHtml = `
-                    <img src="${thumbnailUrl}" alt="${isVideo ? '视频缩略图' : '照片'}"
-                         style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; display: block;"
-                         onerror="this.onerror=null; this.style.display='none'; this.parentElement.innerHTML='<div style=\'position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#f0f0f0; color:#999;\'>图片加载失败</div>';">
-                    ${isVideo ? `<div style="position:absolute; top:8px; right:8px; background:rgba(0,0,0,0.8); color:#fff; padding:4px 8px; border-radius:4px; font-size:12px; font-weight:bold; z-index:10; white-space:nowrap;">🎥${durationText}</div>` : ''}
-                `;
-            } else {
-                mediaHtml = `<div style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#f0f0f0; color:#999;">加载中...</div>`;
-            }
-            
+                    const isVideo = fileType === 'video';
+                    const durationText = isVideo && videoDuration ? ` ${Math.floor(videoDuration)}秒` : '';
+                    let mediaHtml = '';
+                    if (thumbnailUrl) {
+                        mediaHtml = `
+                            <img src="${thumbnailUrl}" alt="${isVideo ? '视频缩略图' : '照片'}"
+                                 style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; display: block;"
+                                 onerror="this.onerror=null; this.style.display='none'; this.parentElement.innerHTML='<div style=\'position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#f0f0f0; color:#999;\'>图片加载失败</div>';">
+                            ${isVideo ? `<div style="position:absolute; top:8px; right:8px; background:rgba(0,0,0,0.8); color:#fff; padding:4px 8px; border-radius:4px; font-size:12px; font-weight:bold; z-index:10; white-space:nowrap;">🎥${durationText}</div>` : ''}
+                        `;
+                    } else {
+                        mediaHtml = `<div style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#f0f0f0; color:#999;">加载中...</div>`;
+                    }
+                    
             html += `
-            <div class="photo-item">
+                        <div class="photo-item">
                 <div class="photo-image-wrapper" onclick="showPhotoDetail(${photoId})" style="cursor: pointer;">
-                    ${mediaHtml}
-                </div>
-                <div class="photo-info">
+                                ${mediaHtml}
+                            </div>
+                            <div class="photo-info">
                     <div class="photo-info-item">时间: ${formatTime}</div>
-                </div>
+                                </div>
                 <div class="photo-actions">
                     <a href="javascript:void(0)" onclick="showPhotoDetail(${photoId})">详情</a>
                     <a href="api/download_photo.php?id=${photoId}&type=original" download>下载</a>
                     <a href="javascript:void(0)" onclick="adminDeletePhoto(${photoId})" class="delete-btn">删除</a>
-                </div>
-            </div>
+                                </div>
+                                </div>
             `;
         });
         
         html += `
-                    </div>
-                </div>
-            </div>
+                                </div>
+                                </div>
+                                </div>
         `;
         inviteIndex++;
     }
@@ -1237,14 +1237,14 @@ function displayPhotos(photos, title) {
                     </div>
                     <div class="photo-info">
                         <div class="photo-info-item">时间: ${formatTime}</div>
-                    </div>
-                    <div class="photo-actions">
+                            </div>
+                            <div class="photo-actions">
                         <a href="javascript:void(0)" onclick="showPhotoDetail(${photoId})">详情</a>
-                        <a href="api/download_photo.php?id=${photoId}&type=original" download>下载</a>
-                        <a href="javascript:void(0)" onclick="adminDeletePhoto(${photoId})" class="delete-btn">删除</a>
-                    </div>
-                </div>
-                `;
+                                <a href="api/download_photo.php?id=${photoId}&type=original" download>下载</a>
+                                <a href="javascript:void(0)" onclick="adminDeletePhoto(${photoId})" class="delete-btn">删除</a>
+                            </div>
+                        </div>
+                    `;
             });
             
             html += `
@@ -1262,7 +1262,7 @@ function displayPhotos(photos, title) {
         userIndex++;
     }
     
-    document.getElementById('photoList').innerHTML = html;
+                document.getElementById('photoList').innerHTML = html;
     document.getElementById('photoPagination').innerHTML = '';
 }
 
@@ -1289,7 +1289,7 @@ function toggleInviteGroup(groupId) {
     } else {
         content.style.display = 'none';
         icon.textContent = '▼';
-    }
+            }
 }
 
 // 管理员删除照片（硬删除，删除文件）

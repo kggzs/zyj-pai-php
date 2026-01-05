@@ -26,6 +26,13 @@ try {
     $password = $_POST['password'] ?? '';
     $email = $_POST['email'] ?? '';
     $inviteCode = $_POST['invite_code'] ?? null;
+    $agreeTerms = isset($_POST['agree_terms']) ? $_POST['agree_terms'] : '';
+    
+    // 检查是否同意用户协议
+    if (empty($agreeTerms) || $agreeTerms !== '1') {
+        echo json_encode(['success' => false, 'message' => '请先阅读并同意《用户服务协议》']);
+        exit;
+    }
     
     if (empty($password)) {
         echo json_encode(['success' => false, 'message' => '密码不能为空']);

@@ -30,8 +30,35 @@ require_once __DIR__ . '/core/autoload.php';
                 <label>密码</label>
                 <input type="password" name="password" required>
             </div>
+            <div class="form-group">
+                <label style="display: flex; align-items: flex-start; cursor: pointer;">
+                    <input type="checkbox" name="agree_terms" id="agreeTerms" required style="width: auto; margin-right: 8px; margin-top: 3px; cursor: pointer;">
+                    <span style="flex: 1; font-size: 14px; line-height: 1.5;">
+                        我已阅读并同意
+                        <a href="javascript:void(0)" onclick="showUserAgreement()" class="agreement-link">《用户服务协议》</a>
+                        <span style="color: red;">*</span>
+                    </span>
+                </label>
+            </div>
             <button type="submit" class="btn">注册</button>
         </form>
+        
+        <!-- 用户协议模态框 -->
+        <div id="agreementModal" class="modal" style="display: none;">
+            <div class="modal-content" style="max-width: 800px; max-height: 90vh; overflow-y: auto;">
+                <div class="modal-header">
+                    <h2>用户服务协议</h2>
+                    <span class="close" onclick="closeAgreementModal()">&times;</span>
+                </div>
+                <div id="agreementContent">
+                    <p>加载中...</p>
+                </div>
+                <div style="margin-top: 30px; text-align: center; padding-top: 20px; border-top: 1px solid #eee;">
+                    <button onclick="acceptAgreement()" class="btn" style="width: auto; padding: 10px 30px; margin-right: 10px;">我已阅读并同意</button>
+                    <button onclick="closeAgreementModal()" class="btn btn-secondary" style="width: auto; padding: 10px 30px;">关闭</button>
+                </div>
+            </div>
+        </div>
         
         <div class="login-link">
             <a href="login.php">已有账号？立即登录</a>

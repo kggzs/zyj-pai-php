@@ -105,12 +105,12 @@ try {
                 error_log('view_photo.php [修复路径]: 原始路径: "' . $originalPathFromDb . '", 修复后: "' . $relativePath . '", photo_id: ' . $photoId);
             } else {
                 // 如果找不到uploads/，记录错误
-                error_log('view_photo.php [403]: 路径格式错误 - 原始路径: "' . $originalPathFromDb . '", 处理后: "' . $relativePath . '", photo_id: ' . $photoId);
-                http_response_code(403);
-                header('Content-Type: text/plain; charset=utf-8');
-                die('路径格式错误');
-            }
+            error_log('view_photo.php [403]: 路径格式错误 - 原始路径: "' . $originalPathFromDb . '", 处理后: "' . $relativePath . '", photo_id: ' . $photoId);
+        http_response_code(403);
+            header('Content-Type: text/plain; charset=utf-8');
+            die('路径格式错误');
         }
+    }
     }
     
     // 构建完整文件路径
@@ -142,8 +142,8 @@ try {
         }
         $filePath = $uploadsDir . '/' . $pathWithoutPrefix;
         if (!file_exists($filePath)) {
-            http_response_code(404);
-            header('Content-Type: text/plain; charset=utf-8');
+        http_response_code(404);
+        header('Content-Type: text/plain; charset=utf-8');
             die('文件不存在: ' . htmlspecialchars($relativePath));
         }
         $normalizedPath = realpath($filePath);

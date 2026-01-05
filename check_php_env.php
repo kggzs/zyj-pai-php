@@ -311,20 +311,11 @@ header('Content-Type: text/html; charset=utf-8');
             // 禁用的函数检查
             $disabledFunctions = ini_get('disable_functions');
             
-            // 项目中使用的函数：exec（用于数据库备份功能）
-            $usedFunctions = ['exec'];
             // 项目中未使用的函数（仅检查，不影响功能）
-            $unusedFunctions = ['shell_exec', 'proc_open', 'system'];
+            $unusedFunctions = ['exec', 'shell_exec', 'proc_open', 'system'];
             
             $disabledUsed = [];
             $disabledUnused = [];
-            
-            // 检查使用的函数
-            foreach ($usedFunctions as $func) {
-                if ($disabledFunctions && strpos($disabledFunctions, $func) !== false) {
-                    $disabledUsed[] = $func;
-                }
-            }
             
             // 检查未使用的函数（仅用于信息展示）
             foreach ($unusedFunctions as $func) {
@@ -333,10 +324,8 @@ header('Content-Type: text/html; charset=utf-8');
                 }
             }
             
-            // 如果使用的函数未被禁用，则通过检查
-            if (empty($disabledUsed)) {
-                $passedChecks++;
-            }
+            // 所有函数都是未使用的，所以总是通过检查
+            $passedChecks++;
             $totalChecks++;
             
             // 构建显示信息
@@ -346,7 +335,7 @@ header('Content-Type: text/html; charset=utf-8');
             } else {
                 $parts = [];
                 if (!empty($disabledUsed)) {
-                    $parts[] = '已禁用（影响功能）: ' . implode(', ', $disabledUsed) . '（数据库备份功能将无法使用）';
+                    $parts[] = '已禁用（影响功能）: ' . implode(', ', $disabledUsed);
                 }
                 if (!empty($disabledUnused)) {
                     $parts[] = '已禁用（未使用）: ' . implode(', ', $disabledUnused);
@@ -505,7 +494,6 @@ header('Content-Type: text/html; charset=utf-8');
                 
                 if (!empty($disabledUsed)) {
                     echo '<p><strong>关键函数被禁用：</strong>以下函数被禁用将影响系统功能：<code>' . implode(', ', $disabledUsed) . '</code>。';
-                    echo '<br>• <code>exec</code> 函数用于数据库备份和恢复功能，如果被禁用，管理员后台的数据库备份功能将无法使用，但其他功能不受影响。';
                     echo '<br>建议在 php.ini 中移除这些函数以启用完整功能。</p>';
                 }
                 if (!empty($disabledUnused)) {

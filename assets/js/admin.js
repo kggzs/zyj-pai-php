@@ -28,8 +28,7 @@ function showSection(section) {
     }
     if (section === 'announcements') loadAnnouncements();
     if (section === 'maintenance') {
-        showMaintenanceTab('backup');
-        loadBackupList();
+        showMaintenanceTab('system_logs');
     }
     if (section === 'settings') loadSettings();
 }
@@ -2626,7 +2625,6 @@ function resetPhotoLogSearch() {
 
 // ==================== 系统维护功能 ====================
 
-let currentBackupPage = 1;
 let currentAdminLogPage = 1;
 let currentAbnormalLogPage = 1;
 let currentAdminLogSearch = '';
@@ -2642,143 +2640,20 @@ function showMaintenanceTab(tab) {
     
     // 激活对应的标签按钮
     const tabs = document.querySelectorAll('.maintenance-tab');
-    const tabNames = ['backup', 'system_logs', 'admin_logs', 'abnormal_behavior'];
+    const tabNames = ['system_logs', 'admin_logs', 'abnormal_behavior'];
     tabs.forEach((btn, index) => {
         if (tabNames[index] === tab) {
             btn.classList.add('active');
         }
     });
     
-    if (tab === 'backup') {
-        loadBackupList();
-    } else if (tab === 'system_logs') {
+    if (tab === 'system_logs') {
         loadSystemErrorLogs();
     } else if (tab === 'admin_logs') {
         loadAdminLogs();
     } else if (tab === 'abnormal_behavior') {
         loadAbnormalLogs();
     }
-}
-
-// 创建数据库备份
-function createBackup() {
-    if (!confirm('确定要创建数据库备份吗？这可能需要一些时间。')) {
-        return;
-    }
-    
-    fetch('api/admin/create_backup.php', {
-        method: 'POST'
-    })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                const fileSize = (data.file_size / 1024 / 1024).toFixed(2);
-                alert(`备份成功！\n文件名：${data.file_name}\n大小：${fileSize} MB`);
-                loadBackupList();
-            } else {
-                alert('备份失败：' + (data.message || '未知错误'));
-            }
-        })
-        .catch(err => {
-            console.error('创建备份失败:', err);
-            alert('创建备份失败，请重试');
-        });
-}
-
-// 加载备份列表
-function loadBackupList() {
-    fetch('api/admin/get_backup_list.php')
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                const backups = data.data.list;
-                if (backups.length === 0) {
-                    document.getElementById('backupList').innerHTML = '<p style="color: #999; padding: 20px;">暂无备份文件</p>';
-                    return;
-                }
-                
-                let html = '<table><thead><tr><th>文件名</th><th>大小</th><th>创建时间</th><th>操作</th></tr></thead><tbody>';
-                backups.forEach(backup => {
-                    const fileSize = (backup.size / 1024 / 1024).toFixed(2);
-                    html += `
-                        <tr>
-                            <td style="font-family: monospace; font-size: 13px;">${backup.name}</td>
-                            <td>${fileSize} MB</td>
-                            <td>${backup.created_time}</td>
-                            <td style="white-space: nowrap;">
-                                <button class="btn btn-warning" onclick="restoreBackup('${backup.name}')" style="padding: 4px 12px; font-size: 12px; margin-right: 5px;">恢复</button>
-                                <button class="btn btn-danger" onclick="deleteBackup('${backup.name}')" style="padding: 4px 12px; font-size: 12px;">删除</button>
-                            </td>
-                        </tr>
-                    `;
-                });
-                html += '</tbody></table>';
-                document.getElementById('backupList').innerHTML = html;
-            }
-        })
-        .catch(err => {
-            console.error('加载备份列表失败:', err);
-            document.getElementById('backupList').innerHTML = '<p style="color: #dc3545; padding: 20px;">加载失败，请刷新重试</p>';
-        });
-}
-
-// 恢复备份
-function restoreBackup(fileName) {
-    if (!confirm(`确定要恢复备份 "${fileName}" 吗？\n警告：此操作将覆盖当前数据库，请确保已做好数据备份！`)) {
-        return;
-    }
-    
-    if (!confirm('再次确认：恢复操作不可逆，确定要继续吗？')) {
-        return;
-    }
-    
-    const formData = new FormData();
-    formData.append('backup_file', fileName);
-    
-    fetch('api/admin/restore_backup.php', {
-        method: 'POST',
-        body: formData
-    })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                alert('恢复成功！');
-            } else {
-                alert('恢复失败：' + (data.message || '未知错误'));
-            }
-        })
-        .catch(err => {
-            console.error('恢复备份失败:', err);
-            alert('恢复失败，请重试');
-        });
-}
-
-// 删除备份
-function deleteBackup(fileName) {
-    if (!confirm(`确定要删除备份 "${fileName}" 吗？此操作不可恢复。`)) {
-        return;
-    }
-    
-    const formData = new FormData();
-    formData.append('backup_file', fileName);
-    
-    fetch('api/admin/delete_backup.php', {
-        method: 'POST',
-        body: formData
-    })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                alert('删除成功');
-                loadBackupList();
-            } else {
-                alert('删除失败：' + (data.message || '未知错误'));
-            }
-        })
-        .catch(err => {
-            console.error('删除备份失败:', err);
-            alert('删除失败，请重试');
-        });
 }
 
 // 加载系统错误日志
@@ -2830,9 +2705,6 @@ function loadAdminLogs(page = 1) {
                             'points_adjust': '调整积分',
                             'vip_set': '设置VIP',
                             'config_update': '更新配置',
-                            'backup_create': '创建备份',
-                            'backup_restore': '恢复备份',
-                            'backup_delete': '删除备份'
                         };
                         const operationTypeName = operationTypeMap[log.operation_type] || log.operation_type;
                         

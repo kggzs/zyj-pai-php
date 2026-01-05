@@ -112,22 +112,9 @@ if (!$adminModel->isLoggedIn()) {
             <div id="maintenance" class="section">
                 <h2>系统维护</h2>
                 <div class="maintenance-tabs">
-                    <button class="maintenance-tab active" onclick="showMaintenanceTab('backup')">数据库备份/恢复</button>
-                    <button class="maintenance-tab" onclick="showMaintenanceTab('system_logs')">系统日志</button>
+                    <button class="maintenance-tab active" onclick="showMaintenanceTab('system_logs')">系统日志</button>
                     <button class="maintenance-tab" onclick="showMaintenanceTab('admin_logs')">管理员操作日志</button>
                     <button class="maintenance-tab" onclick="showMaintenanceTab('abnormal_behavior')">异常行为记录</button>
-                </div>
-                
-                <!-- 数据库备份/恢复 -->
-                <div id="backup" class="maintenance-section active">
-                    <div class="maintenance-card">
-                        <h3>数据库备份</h3>
-                        <div style="margin-bottom: 20px;">
-                            <button class="btn btn-primary" onclick="createBackup()">创建备份</button>
-                            <p style="margin-top: 10px; color: #666; font-size: 13px;">备份文件将保存在 backups/ 目录下</p>
-                        </div>
-                        <div id="backupList"></div>
-                    </div>
                 </div>
                 
                 <!-- 系统日志 -->

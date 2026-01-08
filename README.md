@@ -4,6 +4,43 @@
 
 ---
 
+<div align="center">
+
+[![PHP Version](https://img.shields.io/badge/PHP-7.2%2B-blue.svg)](https://www.php.net/)
+[![MySQL Version](https://img.shields.io/badge/MySQL-5.6%2B-orange.svg)](https://www.mysql.com/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+</div>
+
+---
+
+## 📚 文档导航
+
+> 📖 详细的模块文档和安装教程请参考 `docs/` 目录
+
+### 🚀 快速开始
+
+- 📘 [安装教程](docs/安装教程.md) - 完整的安装部署指南
+
+### 📖 功能文档
+
+- 📘 [用户系统](docs/用户系统.md) - 用户注册、登录、资料管理等功能
+- 🔗 [拍摄链接管理](docs/拍摄链接管理.md) - 拍摄链接的生成、管理、使用
+- 🖼️ [照片视频管理](docs/照片视频管理.md) - 照片/视频的上传、管理、EXIF数据
+- 🎁 [积分系统](docs/积分系统.md) - 积分获取、消费、排行榜等
+- 👑 [VIP会员系统](docs/VIP会员系统.md) - VIP特权、会员管理
+- 🛒 [积分商城](docs/积分商城.md) - 商品管理、兑换流程
+- 📢 [系统公告](docs/系统公告.md) - 公告发布、阅读状态跟踪
+
+### 🔧 管理文档
+
+- 🔧 [管理员后台](docs/管理员后台.md) - 后台管理功能详解
+- 🔐 [创建管理员账号](docs/创建管理员账号.md) - 管理员账号创建脚本使用说明
+- 🔒 [安全功能](docs/安全功能.md) - 安全特性说明
+- 📋 [公告商城信息](docs/公告商城信息.md) - VIP和商城相关信息
+
+---
+
 ## ✨ 系统特性
 
 ### 🎯 核心功能
@@ -122,128 +159,21 @@
 
 ---
 
-## 🚀 安装部署
+## 🚀 快速开始
 
-### 1️⃣ 环境检测
+### 安装部署
 
-访问环境检测脚本检查 PHP 环境是否满足要求：
+详细的安装教程请参考：[📘 安装教程](docs/安装教程.md)
 
-```bash
-http://your-domain/check_php_env.php
-```
+**简要步骤：**
 
-#### 服务器时间同步
+1. **环境检测** - 访问 `check_php_env.php` 检查环境
+2. **数据库配置** - 导入数据库并配置连接
+3. **系统配置** - 配置站点URL（可选）
+4. **目录权限** - 设置上传和缓存目录权限
+5. **创建管理员** - 使用 `create_admin.php` 创建管理员账号
 
-如果服务器时间不准确，可以使用时间同步工具检查和同步时间：
-
-```bash
-http://your-domain/check_time_sync.php
-```
-
-该工具使用阿里云 NTP 服务器 (`ntp.aliyun.com`) 进行时间同步，功能包括：
-- 显示当前服务器时间
-- 获取 NTP 服务器时间并对比差异
-- 提供系统级别的时间同步命令（需要 root 权限）
-
-**推荐在服务器上配置自动时间同步：**
-
-<details>
-<summary><strong>Linux (使用 chronyd，推荐)</strong></summary>
-
-```bash
-# 安装 chrony
-sudo apt-get install -y chrony  # Ubuntu/Debian
-sudo yum install -y chrony      # CentOS/RHEL
-
-# 配置使用阿里云 NTP
-sudo sed -i 's/^pool.*/server ntp.aliyun.com iburst/' /etc/chrony.conf
-
-# 重启服务
-sudo systemctl restart chronyd
-sudo systemctl enable chronyd
-```
-</details>
-
-<details>
-<summary><strong>Linux (使用 ntpdate)</strong></summary>
-
-```bash
-# 安装 ntpdate
-sudo apt-get install -y ntpdate  # Ubuntu/Debian
-sudo yum install -y ntpdate      # CentOS/RHEL
-
-# 立即同步
-sudo ntpdate -u ntp.aliyun.com
-
-# 设置定时任务（每小时同步）
-sudo crontab -e
-# 添加: 0 * * * * /usr/sbin/ntpdate -u ntp.aliyun.com >/dev/null 2>&1
-```
-</details>
-
-### 2️⃣ 数据库配置
-
-#### 创建数据库
-
-推荐使用最新版本初始化脚本：
-
-```bash
-mysql -u root -p < database/init_latest.sql
-```
-
-#### 配置数据库连接
-
-复制 `config/database.php.example` 为 `config/database.php`，并修改配置：
-
-```php
-return [
-    'host' => 'localhost',
-    'dbname' => 'xiaochuo',
-    'username' => 'root',
-    'password' => 'your_password',
-    'charset' => 'utf8mb4',
-];
-```
-
-### 3️⃣ 系统配置
-
-编辑 `config/config.php`，配置站点URL（可选，留空则自动检测）：
-
-```php
-'site_url' => 'http://your-domain.com',
-```
-
-### 4️⃣ 目录权限
-
-确保以下目录可写：
-
-```bash
-chmod -R 755 uploads/
-chmod -R 755 cache/
-```
-
-**需要写入权限的目录：**
-- `uploads/original/` - 原图上传目录
-- `uploads/video/` - 视频上传目录
-- `cache/` - 缓存目录
-
-### 5️⃣ 创建管理员账号
-
-**方法一：通过数据库直接创建**
-
-```sql
--- 生成密码hash（使用PHP）
--- <?php echo password_hash('your_password', PASSWORD_DEFAULT); ?>
-
-INSERT INTO users (username, password, register_ip, register_ua, register_time, last_login_time, status, is_admin, points) 
-VALUES ('admin', 'your_hashed_password', '127.0.0.1', 'Admin Setup', NOW(), NOW(), 1, 1, 0);
-```
-
-**方法二：先注册普通用户，然后设置为管理员**
-
-```sql
-UPDATE users SET is_admin = 1 WHERE username = 'your_username';
-```
+> 💡 完整的安装步骤、常见问题、安全建议等请查看 [安装教程](docs/安装教程.md)
 
 ---
 
@@ -336,6 +266,7 @@ project/
 ├── dashboard.php          # 用户中心页面
 ├── admin_login.php        # 管理员登录页面
 ├── admin.php              # 管理员后台页面
+├── create_admin.php       # 创建管理员账号脚本
 ├── index.php              # 首页入口
 ├── check_php_env.php      # PHP环境检测脚本
 └── README.md              # 项目说明文档
@@ -551,22 +482,11 @@ project/
 - 查看系统错误日志
 </details>
 
----
+<details>
+<summary><strong>5. 如何安装部署系统？</strong></summary>
 
-## 📚 文档
-
-详细的模块文档请参考 `docs/` 目录：
-
-- 📘 [用户系统](docs/用户系统.md) - 用户注册、登录、资料管理等功能
-- 🔗 [拍摄链接管理](docs/拍摄链接管理.md) - 拍摄链接的生成、管理、使用
-- 🖼️ [照片视频管理](docs/照片视频管理.md) - 照片/视频的上传、管理、EXIF数据
-- 🎁 [积分系统](docs/积分系统.md) - 积分获取、消费、排行榜等
-- 👑 [VIP会员系统](docs/VIP会员系统.md) - VIP特权、会员管理
-- 🛒 [积分商城](docs/积分商城.md) - 商品管理、兑换流程
-- 📢 [系统公告](docs/系统公告.md) - 公告发布、阅读状态跟踪
-- 🔧 [管理员后台](docs/管理员后台.md) - 后台管理功能详解
-- 🔒 [安全功能](docs/安全功能.md) - 安全特性说明
-- 📋 [公告商城信息](docs/公告商城信息.md) - VIP和商城相关信息
+请参考详细的 [安装教程](docs/安装教程.md)，包含完整的安装步骤、常见问题、安全建议等。
+</details>
 
 ---
 
@@ -596,6 +516,7 @@ project/
 1. **PHP环境检测**：访问 `check_php_env.php`
 2. **系统错误日志**：管理员后台查看
 3. **数据库连接**：检查 `config/database.php` 配置
+4. **查看文档**：参考 `docs/` 目录下的详细文档
 
 ---
 

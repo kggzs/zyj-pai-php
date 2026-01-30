@@ -187,14 +187,18 @@ function generateInviteWithExpire(expireTime) {
         return;
     }
     
-    const formData = new FormData();
+    // 使用 URLSearchParams 而不是 FormData，避免空的 multipart/form-data 被防火墙拦截
+    const params = new URLSearchParams();
     if (expireTime) {
-        formData.append('expire_time', expireTime);
+        params.append('expire_time', expireTime);
     }
     
     fetch('api/generate_invite.php', { 
         method: 'POST',
-        body: formData
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: params.toString()
     })
         .then(res => res.json())
         .then(data => {

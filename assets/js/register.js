@@ -163,10 +163,24 @@ async function resendVerificationCode() {
 form.addEventListener('submit', async (e) => {
     e.preventDefault();
     
+    // 获取提交按钮
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalBtnText = submitBtn ? submitBtn.textContent : '';
+    
+    // 防止重复提交：禁用提交按钮
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = '注册中...';
+    }
+    
     // 检查是否同意用户协议
     const agreeTerms = document.getElementById('agreeTerms');
     if (!agreeTerms || !agreeTerms.checked) {
         showMessage('请先阅读并同意《用户服务协议》', 'error');
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalBtnText;
+        }
         return;
     }
     
@@ -187,6 +201,51 @@ form.addEventListener('submit', async (e) => {
         
         // 检查响应状态
         if (!response.ok) {
+            // 处理429错误（请求过于频繁）
+            if (response.status === 429) {
+                // 尝试从响应头获取重置时间
+                const resetTime = response.headers.get('X-RateLimit-Reset');
+                const remaining = response.headers.get('X-RateLimit-Remaining');
+                
+                let errorMessage = '请求过于频繁，请稍后再试';
+                
+                // 如果有重置时间，计算剩余等待时间
+                if (resetTime) {
+                    const resetTimestamp = parseInt(resetTime);
+                    const now = Math.floor(Date.now() / 1000);
+                    const waitSeconds = Math.max(0, resetTimestamp - now);
+                    
+                    if (waitSeconds > 0) {
+                        const waitMinutes = Math.ceil(waitSeconds / 60);
+                        errorMessage = `请求过于频繁，请等待约 ${waitMinutes} 分钟后再试`;
+                    }
+                }
+                
+                // 尝试解析JSON响应获取更详细的错误信息
+                try {
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        const data = await response.json();
+                        if (data.message) {
+                            errorMessage = data.message;
+                        }
+                        if (data.retry_after !== undefined) {
+                            const waitMinutes = Math.ceil(data.retry_after / 60);
+                            errorMessage = `请求过于频繁，请等待约 ${waitMinutes} 分钟后再试`;
+                        }
+                    }
+                } catch (parseErr) {
+                    // 如果解析失败，使用默认错误信息
+                }
+                
+                showMessage(errorMessage, 'error');
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalBtnText;
+                }
+                return;
+            }
+            
             throw new Error('网络请求失败：' + response.status);
         }
         
@@ -214,10 +273,18 @@ form.addEventListener('submit', async (e) => {
             }
         } else {
             showMessage(data.message || '注册失败', 'error');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalBtnText;
+            }
         }
     } catch (err) {
         console.error('注册错误：', err);
         showMessage('注册失败：' + (err.message || '请重试'), 'error');
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalBtnText;
+        }
     }
 });
 

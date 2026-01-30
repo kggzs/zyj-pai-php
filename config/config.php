@@ -59,7 +59,7 @@ return [
         'endpoints' => [
             'api/upload.php' => ['max' => 10, 'window' => 60], // 上传接口：每分钟10次
             'api/login.php' => ['max' => 5, 'window' => 300], // 登录接口：5分钟内5次
-            'api/register.php' => ['max' => 3, 'window' => 3600], // 注册接口：1小时内3次
+            'api/register.php' => ['max' => 10, 'window' => 600], // 注册接口：10分钟内10次（放宽限制以支持共享IP场景）
         ]
     ],
     
@@ -102,7 +102,7 @@ return [
     'security_headers' => [
         'enabled' => true, // 是否启用安全响应头
         'csp' => true, // 内容安全策略（CSP）
-        'csp_policy' => "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self';", // CSP策略（可根据实际需求调整）
+        'csp_policy' => "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self';", // CSP策略（可根据实际需求调整）
         'x_content_type_options' => true, // X-Content-Type-Options: nosniff
         'x_frame_options' => true, // X-Frame-Options
         'x_frame_options_value' => 'DENY', // X-Frame-Options值：DENY（禁止）或 SAMEORIGIN（同源允许）

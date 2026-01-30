@@ -15,13 +15,30 @@ function loadMarkdownLibrary() {
     }
     
     return new Promise((resolve, reject) => {
+        // 优先使用本地文件
+        const localPath = 'assets/js/libs/marked/marked.min.js';
+        const cdnPath = 'https://cdn.jsdelivr.net/npm/marked@9.1.6/marked.min.js';
+        
         const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/marked@9.1.6/marked.min.js';
+        script.src = localPath;
+        
         script.onload = () => {
             markdownLoaded = true;
             resolve();
         };
-        script.onerror = reject;
+        
+        script.onerror = () => {
+            // 如果本地文件加载失败，尝试从 CDN 加载
+            const cdnScript = document.createElement('script');
+            cdnScript.src = cdnPath;
+            cdnScript.onload = () => {
+                markdownLoaded = true;
+                resolve();
+            };
+            cdnScript.onerror = reject;
+            document.head.appendChild(cdnScript);
+        };
+        
         document.head.appendChild(script);
     });
 }
@@ -34,13 +51,30 @@ function loadDOMPurifyLibrary() {
     }
     
     return new Promise((resolve, reject) => {
+        // 优先使用本地文件
+        const localPath = 'assets/js/libs/dompurify/purify.min.js';
+        const cdnPath = 'https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js';
+        
         const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js';
+        script.src = localPath;
+        
         script.onload = () => {
             dompurifyLoaded = true;
             resolve();
         };
-        script.onerror = reject;
+        
+        script.onerror = () => {
+            // 如果本地文件加载失败，尝试从 CDN 加载
+            const cdnScript = document.createElement('script');
+            cdnScript.src = cdnPath;
+            cdnScript.onload = () => {
+                dompurifyLoaded = true;
+                resolve();
+            };
+            cdnScript.onerror = reject;
+            document.head.appendChild(cdnScript);
+        };
+        
         document.head.appendChild(script);
     });
 }

@@ -1444,7 +1444,7 @@ function renderRanking(data) {
                 </div>
                 <div style="flex: 1; margin-left: 15px;">
                     <div style="font-size: 16px; font-weight: bold; color: #333; margin-bottom: 5px;">
-                        ${escapeHtml((item.nickname && item.nickname.trim()) ? item.nickname : (item.username || '未知用户'))}
+                        ${escapeHtml((item.nickname && item.nickname.trim()) ? item.nickname : '未知用户')}
                         ${item.is_vip_active ? '<span style="margin-left: 6px; padding: 2px 8px; background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%); color: #8b6914; border-radius: 4px; font-size: 12px; font-weight: bold;">VIP</span>' : ''}
                     </div>
                     ${type === 'total' ? `

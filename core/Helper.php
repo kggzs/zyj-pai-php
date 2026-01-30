@@ -88,7 +88,7 @@ class Helper {
      */
     public static function getProjectName() {
         $projectName = self::getSystemConfig('project_name');
-        return $projectName ?: '拍摄上传系统';
+        return $projectName ?: '网恋照妖镜V2.0';
     }
     
     /**

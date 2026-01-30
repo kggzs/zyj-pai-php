@@ -304,7 +304,7 @@ class Points {
      */
     public function getTotalPointsRanking($limit = 100) {
         $ranking = $this->db->fetchAll(
-            "SELECT u.id, u.username, u.nickname, u.points, u.register_time,
+            "SELECT u.id, u.nickname, u.points,
                     u.is_vip, u.vip_expire_time,
                     (SELECT COUNT(*) FROM invites WHERE user_id = u.id) as invite_count,
                     (SELECT COUNT(*) FROM photos WHERE user_id = u.id) as photo_count
@@ -348,7 +348,7 @@ class Points {
         $endDate = date('Y-m-t', strtotime($startDate));
         
         $ranking = $this->db->fetchAll(
-            "SELECT u.id, u.username, u.nickname, 
+            "SELECT u.id, u.nickname, 
                     u.is_vip, u.vip_expire_time,
                     COALESCE(SUM(pl.points), 0) as monthly_points,
                     COUNT(pl.id) as points_count
@@ -358,7 +358,7 @@ class Points {
                  AND DATE(pl.create_time) >= ? 
                  AND DATE(pl.create_time) <= ?
              WHERE u.status = 1
-             GROUP BY u.id, u.username, u.nickname, u.is_vip, u.vip_expire_time
+             GROUP BY u.id, u.nickname, u.is_vip, u.vip_expire_time
              HAVING monthly_points > 0
              ORDER BY monthly_points DESC, u.id ASC
              LIMIT ?",
@@ -388,7 +388,7 @@ class Points {
      */
     public function getInviteRanking($limit = 100) {
         $ranking = $this->db->fetchAll(
-            "SELECT u.id, u.username, u.nickname,
+            "SELECT u.id, u.nickname,
                     u.is_vip, u.vip_expire_time,
                     COUNT(DISTINCT pl.new_user_id) as invite_count,
                     SUM(pl.points) as total_reward_points
@@ -398,7 +398,7 @@ class Points {
                  AND pl.new_user_id IS NOT NULL
                  AND pl.remark = '邀请新用户注册奖励'
              WHERE u.status = 1
-             GROUP BY u.id, u.username, u.nickname, u.is_vip, u.vip_expire_time
+             GROUP BY u.id, u.nickname, u.is_vip, u.vip_expire_time
              HAVING invite_count > 0
              ORDER BY invite_count DESC, total_reward_points DESC, u.id ASC
              LIMIT ?",
@@ -428,14 +428,14 @@ class Points {
      */
     public function getPhotoCountRanking($limit = 100) {
         $ranking = $this->db->fetchAll(
-            "SELECT u.id, u.username, u.nickname,
+            "SELECT u.id, u.nickname,
                     u.is_vip, u.vip_expire_time,
                     COUNT(p.id) as photo_count,
                     MAX(p.upload_time) as last_upload_time
              FROM users u
              LEFT JOIN photos p ON p.user_id = u.id
              WHERE u.status = 1
-             GROUP BY u.id, u.username, u.nickname, u.is_vip, u.vip_expire_time
+             GROUP BY u.id, u.nickname, u.is_vip, u.vip_expire_time
              HAVING photo_count > 0
              ORDER BY photo_count DESC, last_upload_time DESC, u.id ASC
              LIMIT ?",

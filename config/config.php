@@ -21,7 +21,7 @@ return [
     
     // 录像配置
     'video' => [
-        'max_duration' => 10, // 最大录像时长（秒），默认60秒
+        'max_duration' => 15, // 最大录像时长（秒），默认15秒
     ],
     
     // Session配置

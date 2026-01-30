@@ -40,7 +40,7 @@ let isUploading = false;
 let mediaRecorder = null;
 let recordedChunks = [];
 let recordedBlob = null; // 添加全局变量声明
-let maxVideoDuration = 60; // 默认60秒
+let maxVideoDuration = 15; // 默认15秒
 
 // 随机特效相关
 let randomEffectTimer = null;
@@ -1540,7 +1540,7 @@ async function getMaxVideoDuration() {
         const data = await response.json();
         
         if (data.success && data.data && data.data['video_max_duration']) {
-            maxVideoDuration = parseInt(data.data['video_max_duration']) || 60;
+            maxVideoDuration = parseInt(data.data['video_max_duration']) || 15;
         }
     } catch (err) {
         // 如果获取失败，使用默认值

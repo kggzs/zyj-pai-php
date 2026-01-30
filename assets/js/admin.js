@@ -1720,7 +1720,7 @@ function loadSettings() {
                             const inviteConfig = configs.invite || {};
                             
                             const projectName = systemConfigs['project_name'] || '拍摄上传系统';
-                            const videoMaxDuration = systemConfigs['video_max_duration'] || '60';
+                            const videoMaxDuration = systemConfigs['video_max_duration'] || '15';
                             
                             // 获取邮件模板配置
                             const emailTemplateVerificationSubject = systemConfigs['email_template_verification_subject'] || '邮箱验证码';

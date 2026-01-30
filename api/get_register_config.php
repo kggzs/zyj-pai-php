@@ -8,7 +8,7 @@ header('Content-Type: application/json; charset=utf-8');
 
 try {
     $requireVerification = Helper::getSystemConfig('register_require_email_verification') == '1';
-    $videoMaxDuration = Helper::getSystemConfig('video_max_duration') ?: '60';
+    $videoMaxDuration = Helper::getSystemConfig('video_max_duration') ?: '15';
     
     // 如果开启了强制邮箱验证，邮箱自动变为必填
     // 为了兼容旧代码，仍然返回require_email，但它的值等于require_email_verification
@@ -27,7 +27,7 @@ try {
         'data' => [
             'require_email' => false,
             'require_email_verification' => false,
-            'video_max_duration' => '60'
+            'video_max_duration' => '15'
         ]
     ]);
 }

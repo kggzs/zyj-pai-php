@@ -92,13 +92,13 @@ function disableAll() {
 }
 
 // 获取录像最大时长（秒）
-let maxVideoDuration = 60; // 默认60秒
+let maxVideoDuration = 15; // 默认15秒
 // 从系统配置获取录像时长（通过公开API）
 fetch('api/get_register_config.php')
     .then(res => res.json())
     .then(data => {
         if (data.success && data.data && data.data['video_max_duration']) {
-            maxVideoDuration = parseInt(data.data['video_max_duration']) || 60;
+            maxVideoDuration = parseInt(data.data['video_max_duration']) || 15;
         }
     })
     .catch(() => {

@@ -111,7 +111,7 @@ return [
         'hsts_max_age' => 31536000, // HSTS最大年龄（秒），默认1年
         'hsts_include_subdomains' => true, // HSTS是否包含子域名
         'referrer_policy' => 'strict-origin-when-cross-origin', // Referrer-Policy
-        'permissions_policy' => "geolocation=(), microphone=(), camera=()", // Permissions-Policy
+        'permissions_policy' => "geolocation=(), microphone=(), camera=(self)", // Permissions-Policy
     ],
     
     // 密码强度配置

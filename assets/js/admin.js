@@ -1,4 +1,4 @@
-﻿let currentUserPage = 1;
+let currentUserPage = 1;
 let currentPhotoPage = 1;
 let currentSearch = '';
 let currentPhotoSearch = '';
@@ -1380,18 +1380,23 @@ function displayPhotoDetail(photo) {
     const isPhotoDeleted = photo.deleted_at && photo.deleted_at !== null;
     const deletedBadge = isPhotoDeleted ? '<span class="deleted-badge" style="margin-left: 10px; padding: 2px 6px; background: #dc3545; color: white; border-radius: 3px; font-size: 11px;">已删除</span>' : '';
     
+    const mediaPreview = isVideo
+        ? (isPhotoDeleted
+            ? `<img src="${thumbnailUrl}" alt="视频缩略图" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
+               <div style="position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.8); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 12px;">🎥 ${videoDuration ? Math.floor(videoDuration) + '秒' : ''}</div>
+               ${isPhotoDeleted ? '<div style="position: absolute; top: 8px; left: 8px; background: #dc3545; color: white; padding: 2px 6px; border-radius: 3px; font-size: 11px; font-weight: bold; z-index: 10;">已删除</div>' : ''}`
+            : `<video src="api/view_photo.php?id=${photoId}&type=original&size=original" poster="${thumbnailUrl}" controls preload="metadata" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; background: #000;"></video>
+               <div style="position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.8); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 12px;">🎥 ${videoDuration ? Math.floor(videoDuration) + '秒' : ''}</div>
+               ${isPhotoDeleted ? '<div style="position: absolute; top: 8px; left: 8px; background: #dc3545; color: white; padding: 2px 6px; border-radius: 3px; font-size: 11px; font-weight: bold; z-index: 10;">已删除</div>' : ''}`)
+        : `<img src="${thumbnailUrl}" alt="照片" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; background: #f0f0f0;">
+           ${isPhotoDeleted ? '<div style="position: absolute; top: 8px; left: 8px; background: #dc3545; color: white; padding: 2px 6px; border-radius: 3px; font-size: 11px; font-weight: bold; z-index: 10;">已删除</div>' : ''}`;
+    
     let html = `
         <div class="modal-body" style="max-height: 80vh; overflow-y: auto;">
             <div style="display: flex; gap: 20px; margin-bottom: 20px;">
                 <div style="flex: 0 0 300px;">
                     <div style="position: relative; width: 100%; padding-bottom: 100%; background: #f0f0f0; border-radius: 8px; overflow: hidden;">
-                        ${isVideo ? 
-                            `<img src="${thumbnailUrl}" alt="视频缩略图" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
-                             <div style="position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.8); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 12px;">🎥 ${videoDuration ? Math.floor(videoDuration) + '秒' : ''}</div>
-                             ${isPhotoDeleted ? '<div style="position: absolute; top: 8px; left: 8px; background: #dc3545; color: white; padding: 2px 6px; border-radius: 3px; font-size: 11px; font-weight: bold; z-index: 10;">已删除</div>' : ''}` :
-                            `<img src="${thumbnailUrl}" alt="照片" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; background: #f0f0f0;">
-                             ${isPhotoDeleted ? '<div style="position: absolute; top: 8px; left: 8px; background: #dc3545; color: white; padding: 2px 6px; border-radius: 3px; font-size: 11px; font-weight: bold; z-index: 10;">已删除</div>' : ''}`
-                        }
+                        ${mediaPreview}
                     </div>
                 </div>
                 <div style="flex: 1;">

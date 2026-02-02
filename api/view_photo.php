@@ -183,6 +183,10 @@ try {
     
     // 如果是视频文件
     if ($fileType === 'video') {
+        while (ob_get_level()) {
+            ob_end_clean();
+        }
+
         // 获取视频文件的MIME类型
         $extension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
         $videoMimeTypes = [
@@ -236,11 +240,42 @@ try {
         
         // 支持Range请求（视频流式播放）
         if (isset($_SERVER['HTTP_RANGE'])) {
-            $range = $_SERVER['HTTP_RANGE'];
-            $range = str_replace('bytes=', '', $range);
-            $range = explode('-', $range);
-            $start = (int)$range[0];
-            $end = $range[1] ? (int)$range[1] : $fileSize - 1;
+            $range = trim((string)$_SERVER['HTTP_RANGE']);
+            if (!preg_match('/^bytes=(\d*)-(\d*)$/', $range, $matches)) {
+                http_response_code(416);
+                header('Content-Range: bytes */' . $fileSize);
+                exit;
+            }
+
+            $startRaw = $matches[1];
+            $endRaw = $matches[2];
+
+            if ($startRaw === '' && $endRaw === '') {
+                http_response_code(416);
+                header('Content-Range: bytes */' . $fileSize);
+                exit;
+            }
+
+            if ($startRaw === '') {
+                $suffixLength = (int)$endRaw;
+                if ($suffixLength <= 0) {
+                    http_response_code(416);
+                    header('Content-Range: bytes */' . $fileSize);
+                    exit;
+                }
+                $start = max(0, $fileSize - $suffixLength);
+                $end = $fileSize - 1;
+            } else {
+                $start = (int)$startRaw;
+                $end = ($endRaw === '') ? ($fileSize - 1) : (int)$endRaw;
+            }
+
+            if ($start < 0 || $end < $start || $end >= $fileSize) {
+                http_response_code(416);
+                header('Content-Range: bytes */' . $fileSize);
+                exit;
+            }
+
             $length = $end - $start + 1;
             
             http_response_code(206);
@@ -248,8 +283,20 @@ try {
             header('Content-Length: ' . $length);
             
             $fp = fopen($filePath, 'rb');
+            if ($fp === false) {
+                http_response_code(500);
+                exit;
+            }
             fseek($fp, $start);
-            echo fread($fp, $length);
+            $remaining = $length;
+            while ($remaining > 0 && !feof($fp)) {
+                $chunk = fread($fp, min(8192, $remaining));
+                if ($chunk === false) {
+                    break;
+                }
+                $remaining -= strlen($chunk);
+                echo $chunk;
+            }
             fclose($fp);
         } else {
             readfile($filePath);
@@ -364,6 +411,10 @@ try {
     $fileSize = filesize($filePath);
     $lastModified = filemtime($filePath);
     
+    while (ob_get_level()) {
+        ob_end_clean();
+    }
+
     // 设置响应头
     header('Content-Type: ' . $mimeType);
     header('Content-Length: ' . $fileSize);
@@ -389,4 +440,3 @@ try {
     http_response_code(500);
     die('查看失败');
 }
-

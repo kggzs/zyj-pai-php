@@ -212,12 +212,19 @@ class Security {
                 return null;
             }
             
-            // 移除端口号（如果有）
-            if (strpos($ip, ':') !== false) {
-                $ipParts = explode(':', $ip);
-                $ip = trim($ipParts[0]);
-            } else {
-                $ip = trim($ip);
+            $ip = trim((string)$ip);
+            if ($ip === '') {
+                return null;
+            }
+
+            if (preg_match('/^\[([^\]]+)\](?::\d+)?$/', $ip, $m)) {
+                $ip = $m[1];
+            } elseif (preg_match('/^(\d{1,3}(?:\.\d{1,3}){3}):\d+$/', $ip, $m)) {
+                $ip = $m[1];
+            }
+
+            if (strpos($ip, '%') !== false) {
+                $ip = explode('%', $ip, 2)[0];
             }
             
             // 处理IPv6映射的IPv4地址
@@ -656,4 +663,3 @@ class Security {
         return $requirements;
     }
 }
-

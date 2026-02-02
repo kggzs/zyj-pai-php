@@ -6,6 +6,11 @@
 ini_set('display_errors', 0);
 error_reporting(E_ALL);
 
+// 允许脚本在用户断开连接后继续执行
+ignore_user_abort(true);
+// 取消脚本执行时间限制
+set_time_limit(0);
+
 session_start();
 require_once __DIR__ . '/../core/autoload.php';
 

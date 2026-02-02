@@ -56,6 +56,9 @@ try {
         $tmpFile = $_FILES['video']['tmp_name'];
         if (file_exists($tmpFile)) {
             $videoData = file_get_contents($tmpFile);
+            Logger::info('接收视频数据', ['size' => strlen($videoData), 'tmp_file' => $tmpFile]);
+        } else {
+            Logger::error('临时文件不存在', ['tmp_file' => $tmpFile]);
         }
     }
     // 兼容Base64上传（向后兼容）
@@ -104,15 +107,19 @@ try {
     
     // 处理录像（使用二进制数据）
     $processor = new ImageProcessor();
+    Logger::info('开始处理视频', ['invite_code' => $inviteCode]);
     $result = $processor->processVideoBinary($videoData, $inviteCode);
     
     if (!$result['success']) {
+        Logger::error('视频处理失败', ['message' => $result['message']]);
         if (ob_get_level()) {
             ob_clean();
         }
         echo json_encode($result);
         exit;
     }
+    
+    Logger::info('视频处理成功', ['path' => $result['original_path'], 'duration' => $result['duration']]);
     
     // 获取上传IP（兼容CDN和反向代理）
     $uploadIp = Security::getClientIp();
@@ -122,7 +129,8 @@ try {
     
     // 保存录像信息
     $photoModel = new Photo();
-    $photoModel->saveVideo(
+    Logger::info('开始保存视频记录到数据库', ['invite_code' => $inviteCode]);
+    $photoId = $photoModel->saveVideo(
         $invite['id'],
         $inviteCode,
         $invite['user_id'],
@@ -131,6 +139,8 @@ try {
         $uploadIp,
         $uploadUa
     );
+    
+    Logger::info('视频记录保存成功', ['photo_id' => $photoId, 'invite_code' => $inviteCode]);
     
     // 异步更新邀请上传数量（不阻塞响应）
     register_shutdown_function(function() use ($inviteModel, $invite) {

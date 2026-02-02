@@ -455,7 +455,30 @@ class ImageProcessor {
         $filename = date('YmdHis') . '_' . substr(md5($inviteCode . time()), 0, 8) . '.' . $extension;
         $filepath = $dir . $filename;
         
-        file_put_contents($filepath, $videoData);
+        Logger::info('开始保存视频文件', ['filepath' => $filepath, 'size' => strlen($videoData)]);
+        
+        // 检查目录可写
+        if (!is_writable($dir)) {
+            throw new Exception('视频目录不可写: ' . $dir);
+        }
+        
+        // 保存文件并检查结果
+        $result = file_put_contents($filepath, $videoData);
+        if ($result === false) {
+            throw new Exception('文件保存失败: ' . $filepath);
+        }
+        
+        // 验证文件是否真正写入
+        if (!file_exists($filepath)) {
+            throw new Exception('文件写入后不存在: ' . $filepath);
+        }
+        
+        $actualSize = filesize($filepath);
+        if ($actualSize != strlen($videoData)) {
+            throw new Exception('文件大小不匹配，期望: ' . strlen($videoData) . ', 实际: ' . $actualSize);
+        }
+        
+        Logger::info('视频文件保存成功', ['filepath' => $filepath, 'size' => $actualSize]);
         
         return 'uploads/video/' . $filename;
     }

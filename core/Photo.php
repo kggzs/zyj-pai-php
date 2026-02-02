@@ -70,9 +70,17 @@ class Photo {
     public function saveVideo($inviteId, $inviteCode, $userId, $originalPath, $duration, $uploadIp, $uploadUa = null) {
         $uploadTime = date('Y-m-d H:i:s');
         
+        Logger::info('开始保存视频记录到数据库', [
+            'invite_id' => $inviteId,
+            'invite_code' => $inviteCode,
+            'user_id' => $userId,
+            'original_path' => $originalPath,
+            'duration' => $duration
+        ]);
+        
         $sql = "INSERT INTO photos (invite_id, invite_code, user_id, original_path, result_path, file_type, video_duration, upload_ip, upload_ua, upload_time) 
                 VALUES (?, ?, ?, ?, '', 'video', ?, ?, ?, ?)";
-        $this->db->execute($sql, [
+        $params = [
             $inviteId,
             $inviteCode,
             $userId,
@@ -81,7 +89,21 @@ class Photo {
             $uploadIp,
             $uploadUa,
             $uploadTime
-        ]);
+        ];
+        
+        try {
+            $this->db->execute($sql, $params);
+        } catch (Exception $e) {
+            Logger::error('数据库保存视频记录失败', [
+                'error' => $e->getMessage(),
+                'invite_code' => $inviteCode
+            ]);
+            throw $e;
+        }
+        
+        $photoId = $this->db->lastInsertId();
+        
+        Logger::info('视频记录保存成功', ['photo_id' => $photoId, 'invite_code' => $inviteCode]);
         
         // 异步清除统计数据缓存（不阻塞响应）
         register_shutdown_function(function() {
@@ -93,7 +115,7 @@ class Photo {
             }
         });
         
-        return $this->db->lastInsertId();
+        return $photoId;
     }
     
     /**

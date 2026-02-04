@@ -258,59 +258,36 @@ async function uploadImage() {
         loadingDiv.style.display = 'none';
         return;
     }
-    
+
+    // 使用 UploadHelper 上传
+    if (!window.UploadHelper) {
+        showMessage('上传模块加载失败', 'error');
+        loadingDiv.style.display = 'none';
+        startBtn.style.display = 'block';
+        return;
+    }
+
+    const uploader = new window.UploadHelper();
+
     try {
-        // 使用FormData发送二进制数据
-        const formData = new FormData();
-        formData.append('image', capturedImage, 'photo.jpg');
-        formData.append('invite_code', inviteCode);
-        
-        const response = await fetch('api/upload.php', {
-            method: 'POST',
-            body: formData
+        await uploader.uploadImage(capturedImage, inviteCode, {
+            onStart: () => {
+                loadingDiv.style.display = 'block';
+                loadingDiv.textContent = '正在上传...';
+            },
+            onSuccess: (data) => {
+                showMessage('上传成功！', 'success');
+                // 显示注册按钮
+                registerBtn.style.display = 'block';
+                loadingDiv.style.display = 'none';
+            },
+            onError: (error) => {
+                showMessage(error.message || '上传失败，请重试', 'error');
+                loadingDiv.style.display = 'none';
+                // 显示重新开始按钮
+                startBtn.style.display = 'block';
+            }
         });
-        
-        // 检查响应状态
-        if (!response.ok) {
-            const text = await response.text();
-            console.error('上传失败，HTTP状态:', response.status);
-            console.error('响应内容:', text);
-            showMessage('上传失败：服务器错误 ' + response.status, 'error');
-            loadingDiv.style.display = 'none';
-            // 显示重新开始按钮
-            startBtn.style.display = 'block';
-            return;
-        }
-        
-        // 获取响应文本
-        const text = await response.text();
-        console.log('服务器响应:', text);
-        
-        // 尝试解析JSON
-        let data;
-        try {
-            data = JSON.parse(text);
-        } catch (e) {
-            console.error('JSON解析失败:', e);
-            console.error('响应内容:', text);
-            showMessage('服务器返回格式错误，请检查控制台', 'error');
-            loadingDiv.style.display = 'none';
-            // 显示重新开始按钮
-            startBtn.style.display = 'block';
-            return;
-        }
-        
-        if (data.success) {
-                    showMessage('上传成功！', 'success');
-            // 显示注册按钮
-                    registerBtn.style.display = 'block';
-                    loadingDiv.style.display = 'none';
-        } else {
-            showMessage(data.message || '上传失败', 'error');
-            loadingDiv.style.display = 'none';
-            // 显示重新开始按钮
-            startBtn.style.display = 'block';
-        }
     } catch (err) {
         console.error('上传错误:', err);
         showMessage('上传失败，请重试', 'error');

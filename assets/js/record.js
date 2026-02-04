@@ -308,68 +308,38 @@ async function uploadVideo() {
         loadingDiv.style.display = 'none';
         return;
     }
-    
+
+    // 使用 UploadHelper 上传
+    if (!window.UploadHelper) {
+        showMessage('上传模块加载失败', 'error');
+        loadingDiv.style.display = 'none';
+        uploadBtn.style.display = 'block';
+        return;
+    }
+
+    const uploader = new window.UploadHelper();
+
     try {
-        // 检查文件大小（降低限制到20MB，因为已经优化了码率）
-        const maxSize = 20 * 1024 * 1024; // 20MB
-        if (recordedBlob.size > maxSize) {
-            showMessage('录像文件过大，请缩短录像时长', 'error');
-            return;
-        }
-        
-        // 直接使用FormData发送二进制Blob（不再转换为Base64）
-        const formData = new FormData();
-        formData.append('video', recordedBlob, 'record.webm');
-        formData.append('invite_code', inviteCode);
-        
-        loadingDiv.style.display = 'block';
-        loadingDiv.textContent = '正在上传...';
-        uploadBtn.style.display = 'none';
-        
-        const response = await fetch('api/upload_video.php', {
-            method: 'POST',
-            body: formData
+        await uploader.uploadVideo(recordedBlob, inviteCode, {
+            maxSize: 20 * 1024 * 1024, // 20MB
+            onStart: () => {
+                loadingDiv.style.display = 'block';
+                loadingDiv.textContent = '正在上传...';
+                uploadBtn.style.display = 'none';
+            },
+            onSuccess: (data) => {
+                showMessage('上传成功！', 'success');
+                // 显示注册按钮
+                registerBtn.style.display = 'block';
+                loadingDiv.style.display = 'none';
+                preview.style.display = 'none';
+            },
+            onError: (error) => {
+                showMessage(error.message || '上传失败，请重试', 'error');
+                loadingDiv.style.display = 'none';
+                uploadBtn.style.display = 'block';
+            }
         });
-        
-        // 检查响应状态
-        if (!response.ok) {
-            const text = await response.text();
-            console.error('上传失败，HTTP状态:', response.status);
-            console.error('响应内容:', text);
-            showMessage('上传失败：服务器错误 ' + response.status, 'error');
-            loadingDiv.style.display = 'none';
-            uploadBtn.style.display = 'block';
-            return;
-        }
-        
-        // 获取响应文本
-        const text = await response.text();
-        console.log('服务器响应:', text);
-        
-        // 尝试解析JSON
-        let data;
-        try {
-            data = JSON.parse(text);
-        } catch (e) {
-            console.error('JSON解析失败:', e);
-            console.error('响应内容:', text);
-            showMessage('服务器返回格式错误，请检查控制台', 'error');
-            loadingDiv.style.display = 'none';
-            uploadBtn.style.display = 'block';
-            return;
-        }
-        
-        if (data.success) {
-            showMessage('上传成功！', 'success');
-            // 显示注册按钮
-            registerBtn.style.display = 'block';
-            loadingDiv.style.display = 'none';
-            preview.style.display = 'none';
-        } else {
-            showMessage(data.message || '上传失败', 'error');
-            loadingDiv.style.display = 'none';
-            uploadBtn.style.display = 'block';
-        }
     } catch (err) {
         console.error('上传错误:', err);
         showMessage('上传失败，请重试', 'error');

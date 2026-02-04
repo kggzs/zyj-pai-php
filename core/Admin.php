@@ -98,13 +98,33 @@ class Admin {
     /**
      * 获取用户列表（分页）
      */
-    public function getUserList($page = 1, $pageSize = 20, $search = '') {
+    public function getUserList($page = 1, $pageSize = 20, $search = '', $filter = 'all') {
         $offset = ($page - 1) * $pageSize;
         
         // 构建搜索条件（复用逻辑，避免重复）
         $searchCondition = $this->buildUserSearchCondition($search);
         $where = $searchCondition['where'];
         $params = $searchCondition['params'];
+        
+        // 添加分组筛选条件
+        switch ($filter) {
+            case 'vip':
+                // VIP用户：is_vip = 1 且 (vip_expire_time IS NULL 或 vip_expire_time > NOW())
+                $where .= " AND ((is_vip = 1 OR is_vip = '1' OR CAST(is_vip AS UNSIGNED) = 1) AND (vip_expire_time IS NULL OR vip_expire_time > NOW()))";
+                break;
+            case 'normal':
+                // 普通用户：is_vip = 0 且 email_verified = 1
+                $where .= " AND ((is_vip = 0 OR is_vip = '0' OR CAST(is_vip AS UNSIGNED) = 0) AND email_verified = 1)";
+                break;
+            case 'unverified':
+                // 未验证用户：email_verified = 0
+                $where .= " AND email_verified = 0";
+                break;
+            case 'all':
+            default:
+                // 全部用户：不添加额外筛选
+                break;
+        }
         
         $sql = "SELECT id, username, nickname, email, email_verified, email_notify_photo, 
                        register_ip, register_ua, register_time, 

@@ -225,11 +225,55 @@ class Announcement {
             "SELECT COUNT(*) as total FROM users WHERE status = 1"
         );
         
+        // 获取统计数据
+        $statistics = $this->getAnnouncementReadStatistics($announcementId);
+        
         return [
             'list' => $users,
             'total' => $total['total'] ?? 0,
             'page' => $page,
-            'page_size' => $pageSize
+            'page_size' => $pageSize,
+            'statistics' => $statistics
+        ];
+    }
+    
+    /**
+     * 获取公告阅读统计
+     */
+    public function getAnnouncementReadStatistics($announcementId) {
+        // 获取总用户数
+        $totalUsers = $this->db->fetchOne(
+            "SELECT COUNT(*) as count FROM users WHERE status = 1"
+        );
+        
+        // 获取已读用户数
+        $readUsers = $this->db->fetchOne(
+            "SELECT COUNT(*) as count 
+             FROM user_announcements 
+             WHERE announcement_id = ? AND is_read = 1",
+            [$announcementId]
+        );
+        
+        // 获取未读用户数
+        $unreadUsers = $this->db->fetchOne(
+            "SELECT COUNT(*) as count 
+             FROM user_announcements 
+             WHERE announcement_id = ? AND (is_read IS NULL OR is_read = 0)",
+            [$announcementId]
+        );
+        
+        $total = $totalUsers['count'] ?? 0;
+        $read = $readUsers['count'] ?? 0;
+        $unread = $unreadUsers['count'] ?? 0;
+        
+        // 计算已读率
+        $readRate = $total > 0 ? round(($read / $total) * 100, 2) : 0;
+        
+        return [
+            'total' => $total,
+            'read' => $read,
+            'unread' => $unread,
+            'read_rate' => $readRate
         ];
     }
     

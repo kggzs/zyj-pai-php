@@ -2,6 +2,7 @@ let currentUserPage = 1;
 let currentPhotoPage = 1;
 let currentSearch = '';
 let currentPhotoSearch = '';
+let currentUserFilter = 'all';
 
 // HTML转义函数，防止XSS攻击
 function escapeHtml(text) {
@@ -36,6 +37,33 @@ function showSection(section) {
 // 格式化数字（添加千分位分隔符）
 function formatNumber(num) {
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
+// 格式化IP地址显示（解决IPv6地址过长问题）
+// 如果是IPv6且超过一定长度，添加省略号和title提示
+function formatIpAddress(ip) {
+    if (!ip || ip === '未知') {
+        return '未知';
+    }
+    const ipEscaped = escapeHtml(ip);
+    // 如果IP地址超过25个字符（可能是IPv6），添加省略号和完整地址在title中
+    if (ip.length > 25) {
+        return `<span class="ip-address" title="${ipEscaped}">${ipEscaped}</span>`;
+    }
+    return ipEscaped;
+}
+
+// 表格单元格中的IP地址显示
+function formatIpAddressCell(ip) {
+    if (!ip || ip === '未知') {
+        return '未知';
+    }
+    const ipEscaped = escapeHtml(ip);
+    // 表格单元格限制更严格，超过20个字符就截断
+    if (ip.length > 20) {
+        return `<span class="ip-address" title="${ipEscaped}">${ipEscaped}</span>`;
+    }
+    return `<span title="${ipEscaped}">${ipEscaped}</span>`;
 }
 
 // 计算百分比
@@ -310,7 +338,8 @@ function clearCache() {
 function loadUsers(page = 1) {
     currentUserPage = page;
     const searchParam = currentSearch ? `&search=${encodeURIComponent(currentSearch)}` : '';
-    fetch(`api/admin/get_users.php?page=${page}&page_size=20${searchParam}`)
+    const filterParam = `&filter=${currentUserFilter}`;
+    fetch(`api/admin/get_users.php?page=${page}&page_size=20${searchParam}${filterParam}`)
         .then(res => res.json())
         .then(data => {
             if (data.success) {
@@ -363,7 +392,7 @@ function loadUsers(page = 1) {
                             <td style="min-width: 180px; max-width: 250px;">
                                 <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${escapeHtml(user.email || '未绑定')}">${emailInfo}</div>
                             </td>
-                            <td style="width: 120px; white-space: nowrap;">${escapeHtml(user.register_ip || '未知')}</td>
+                            <td class="ip-address-cell">${formatIpAddressCell(user.register_ip)}</td>
                             <td style="width: 160px; white-space: nowrap;">${user.register_time ? escapeHtml(user.register_time.replace(/:\d{2}$/, '')) : '未知'}</td>
                             <td style="width: 160px; white-space: nowrap;">${user.last_login_time ? escapeHtml(user.last_login_time.replace(/:\d{2}$/, '')) : '从未登录'}</td>
                             <td style="width: 80px; text-align: center; font-weight: bold; color: #5B9BD5;">${user.points || 0}</td>
@@ -404,6 +433,26 @@ function searchUsers() {
 function resetSearch() {
     document.getElementById('userSearch').value = '';
     currentSearch = '';
+    currentUserFilter = 'all';
+    // 重置分组标签选中状态
+    document.querySelectorAll('.filter-tab').forEach(tab => {
+        tab.classList.remove('active');
+        if (tab.dataset.filter === 'all') {
+            tab.classList.add('active');
+        }
+    });
+    loadUsers(1);
+}
+
+function filterUsers(filter) {
+    currentUserFilter = filter;
+    // 更新分组标签选中状态
+    document.querySelectorAll('.filter-tab').forEach(tab => {
+        tab.classList.remove('active');
+        if (tab.dataset.filter === filter) {
+            tab.classList.add('active');
+        }
+    });
     loadUsers(1);
 }
 
@@ -451,11 +500,11 @@ function showUserDetail(userId) {
                         <div class="detail-item"><strong>昵称：</strong>${user.nickname ? escapeHtml(user.nickname) : '<span style="color: #999;">未设置</span>'}</div>
                         <div class="detail-item"><strong>邮箱：</strong>${emailStatus}</div>
                         <div class="detail-item"><strong>邮箱提醒：</strong>${emailNotifyStatus}</div>
-                        <div class="detail-item"><strong>注册IP：</strong>${escapeHtml(user.register_ip || '未知')}</div>
+                        <div class="detail-item"><strong>注册IP：</strong><span class="ip-address-inline">${formatIpAddress(user.register_ip)}</span></div>
                         <div class="detail-item"><strong>注册浏览器：</strong><div class="ua-text">${escapeHtml(user.register_ua || '未知')}</div></div>
                         <div class="detail-item"><strong>注册时间：</strong>${escapeHtml(user.register_time || '未知')}</div>
                         <div class="detail-item"><strong>上次登录时间：</strong>${escapeHtml(user.last_login_time || '从未登录')}</div>
-                        <div class="detail-item"><strong>上次登录IP：</strong>${escapeHtml(user.last_login_ip || '未知')}</div>
+                        <div class="detail-item"><strong>上次登录IP：</strong><span class="ip-address-inline">${formatIpAddress(user.last_login_ip)}</span></div>
                         <div class="detail-item">
                             <strong>积分：</strong>${user.points || 0}
                             <button class="btn btn-sm btn-warning" onclick="showAdjustPointsModal(${user.id}, ${user.points || 0})" style="margin-left: 10px; padding: 4px 12px; font-size: 12px;">调整积分</button>
@@ -512,7 +561,7 @@ function showUserDetail(userId) {
                                             <td>${invited.id}</td>
                                             <td>${invitedDisplayName}</td>
                                             <td>${invited.register_time}</td>
-                                            <td>${invited.register_ip || '未知'}</td>
+                                            <td class="ip-address-cell">${formatIpAddressCell(invited.register_ip)}</td>
                                             <td style="font-family: monospace;" title="${invited.invite_code ? (invited.invite_code.length === 6 ? '注册码（6位）' : invited.invite_code.length === 8 ? '拍摄链接码（8位）' : '') : ''}">${invited.invite_code || '未知'}</td>
                                         </tr>
                                     `;
@@ -533,7 +582,7 @@ function showUserDetail(userId) {
                                     ${user.login_logs.map(log => `
                                         <tr>
                                             <td>${log.login_time || ''}</td>
-                                            <td>${log.login_ip || '未知'}</td>
+                                            <td class="ip-address-cell">${formatIpAddressCell(log.login_ip)}</td>
                                             <td>${log.is_success == 1 ? '<span style="color: #28a745;">成功</span>' : '<span style="color: #dc3545;">失败</span>'}</td>
                                             <td>${log.fail_reason || '-'}</td>
                                         </tr>
@@ -2416,7 +2465,7 @@ function loadLoginLogs(page = 1) {
                                 <td style="min-width: 150px;">
                                     ${log.user_id ? `<a href="javascript:void(0)" onclick="showUserDetail(${log.user_id})" style="color: #5B9BD5;">${escapeHtml(displayName)}</a> (ID: ${log.user_id})` : '未登录'}
                                 </td>
-                                <td style="width: 120px; white-space: nowrap;">${escapeHtml(log.login_ip || '未知')}</td>
+                                <td class="ip-address-cell">${formatIpAddressCell(log.login_ip)}</td>
                                 <td style="width: 80px; text-align: center;">${statusBadge}</td>
                                 <td style="width: 150px;">${escapeHtml(log.fail_reason || '-')}</td>
                                 <td style="min-width: 200px;" title="${escapeHtml(log.login_ua || '')}">${escapeHtml(browserInfo)}</td>
@@ -2580,7 +2629,7 @@ function loadPhotoLogs(page = 1) {
                                     <a href="javascript:void(0)" onclick="showUserDetail(${log.user_id})" style="color: #5B9BD5;">${escapeHtml(displayName)}</a> (ID: ${log.user_id})
                                 </td>
                                 <td style="width: 120px; font-family: monospace;" title="${log.invite_code ? (log.invite_code.length === 6 ? '注册码（6位）' : log.invite_code.length === 8 ? '拍摄链接码（8位）' : '') : ''}">${escapeHtml(log.invite_code || '未知')}</td>
-                                <td style="width: 120px; white-space: nowrap;">${escapeHtml(log.upload_ip || '未知')}</td>
+                                <td class="ip-address-cell">${formatIpAddressCell(log.upload_ip)}</td>
                                 <td style="min-width: 200px;" title="${escapeHtml(log.upload_ua || '')}">${escapeHtml(browserInfo)}</td>
                                 <td style="min-width: 200px;" title="${escapeHtml(log.upload_ua || '')}">${escapeHtml(deviceInfo)}</td>
                             </tr>
@@ -2716,7 +2765,7 @@ function loadAdminLogs(page = 1) {
                                 <td style="width: 120px;">${operationTypeName}</td>
                                 <td style="width: 100px;">${log.target_type || '-'} ${log.target_id ? `(${log.target_id})` : ''}</td>
                                 <td style="min-width: 200px;">${log.description || '-'}</td>
-                                <td style="width: 120px; white-space: nowrap;">${log.ip_address || '未知'}</td>
+                                <td class="ip-address-cell">${formatIpAddressCell(log.ip_address)}</td>
                             </tr>
                         `;
                     });
@@ -2802,7 +2851,7 @@ function loadAbnormalLogs(page = 1) {
                                 <td style="width: 120px;">${escapeHtml(behaviorTypeName)}</td>
                                 <td style="width: 80px; text-align: center; color: ${severityColor}; font-weight: bold;">${escapeHtml(severityName)}</td>
                                 <td style="min-width: 200px;">${escapeHtml(log.description || '-')}</td>
-                                <td style="width: 120px; white-space: nowrap;">${escapeHtml(log.ip_address || '未知')}</td>
+                                <td class="ip-address-cell">${formatIpAddressCell(log.ip_address)}</td>
                                 <td style="width: 100px; text-align: center;">${handledBadge}</td>
                                 <td style="width: 100px; white-space: nowrap;">
                                     ${log.is_handled == 0 ? `<button class="btn btn-sm btn-success" onclick="handleAbnormalBehavior(${log.id})" style="padding: 4px 12px; font-size: 12px;">标记已处理</button>` : '-'}
@@ -3141,12 +3190,56 @@ function showAnnouncementReadStatus(announcementId, page = 1) {
 
 // 渲染公告已读状态
 function renderAnnouncementReadStatus(data) {
-    const { list, total, page, page_size } = data;
+    const { list, total, page, page_size, statistics } = data;
     
     if (!list || list.length === 0) {
         document.getElementById('announcementReadStatusList').innerHTML = '<p>暂无数据</p>';
         document.getElementById('announcementReadStatusPagination').innerHTML = '';
         return;
+    }
+    
+    // 构建统计卡片
+    let statisticsHtml = '';
+    if (statistics) {
+        statisticsHtml = `
+            <div style="background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%); padding: 15px; border-radius: 6px; margin-bottom: 15px; color: white;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <h3 style="margin: 0; font-size: 16px; font-weight: bold;">📊 阅读统计</h3>
+                    <button onclick="showAnnouncementReadStatus(${currentReadStatusAnnouncementId}, ${page})" style="background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.3); color: white; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; transition: background 0.2s;">
+                        🔄 刷新数据
+                    </button>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                    <div style="background: rgba(255, 255, 255, 0.15); padding: 10px; border-radius: 4px; text-align: center;">
+                        <div style="font-size: 12px; opacity: 0.9; margin-bottom: 3px;">总用户数</div>
+                        <div style="font-size: 22px; font-weight: bold;">${statistics.total}</div>
+                    </div>
+                    <div style="background: rgba(76, 175, 80, 0.85); padding: 10px; border-radius: 4px; text-align: center;">
+                        <div style="font-size: 12px; opacity: 0.9; margin-bottom: 3px;">已读用户</div>
+                        <div style="font-size: 22px; font-weight: bold;">${statistics.read}</div>
+                    </div>
+                    <div style="background: rgba(244, 67, 54, 0.85); padding: 10px; border-radius: 4px; text-align: center;">
+                        <div style="font-size: 12px; opacity: 0.9; margin-bottom: 3px;">未读用户</div>
+                        <div style="font-size: 22px; font-weight: bold;">${statistics.unread}</div>
+                    </div>
+                </div>
+                <div style="margin-top: 12px; background: rgba(255, 255, 255, 0.2); padding: 10px; border-radius: 4px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 13px;">已读率</span>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 180px; height: 6px; background: rgba(255, 255, 255, 0.3); border-radius: 3px; overflow: hidden;">
+                                <div style="width: ${statistics.read_rate}%; height: 100%; background: #4CAF50; transition: width 0.3s ease;"></div>
+                            </div>
+                            <span style="font-size: 16px; font-weight: bold;">${statistics.read_rate}%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 15px; padding: 10px; background: #f8f9fa; border-radius: 6px; border-left: 4px solid #2196F3;">
+                <strong>提示：</strong>点击列表可以查看用户详情，未读用户显示在列表顶部
+            </div>
+        `;
     }
     
     const html = list.map(user => {
@@ -3155,7 +3248,7 @@ function renderAnnouncementReadStatus(data) {
         const displayName = (user.nickname && user.nickname.trim()) ? user.nickname : user.username;
         
         return `
-            <div style="padding: 12px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+            <div style="padding: 12px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; ${!isRead ? 'background: #fff3f3;' : ''}">
                 <div>
                     <div style="font-weight: bold; margin-bottom: 4px;">${escapeHtml(displayName)}</div>
                     <div style="font-size: 12px; color: #999;">ID: ${user.id} | 用户名: ${escapeHtml(user.username)}</div>
@@ -3170,7 +3263,7 @@ function renderAnnouncementReadStatus(data) {
         `;
     }).join('');
     
-    document.getElementById('announcementReadStatusList').innerHTML = html;
+    document.getElementById('announcementReadStatusList').innerHTML = statisticsHtml + html;
     
     // 分页
     const totalPages = Math.ceil(total / page_size);

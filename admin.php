@@ -45,6 +45,12 @@ if (!$adminModel->isLoggedIn()) {
             <!-- 用户管理 -->
             <div id="users" class="section">
                 <h2>用户管理</h2>
+                <div class="user-filter-tabs">
+                    <button class="filter-tab active" data-filter="all" onclick="filterUsers('all')">全部用户</button>
+                    <button class="filter-tab" data-filter="vip" onclick="filterUsers('vip')">VIP用户</button>
+                    <button class="filter-tab" data-filter="normal" onclick="filterUsers('normal')">普通用户</button>
+                    <button class="filter-tab" data-filter="unverified" onclick="filterUsers('unverified')">未验证用户</button>
+                </div>
                 <div class="search-box">
                     <input type="text" id="userSearch" placeholder="搜索用户名、昵称、邮箱、IP、注册码（6位）或拍摄链接码（8位）">
                     <button onclick="searchUsers()">搜索</button>

@@ -678,6 +678,39 @@ body {
     color: #333;
 }
 
+/* 用户分组标签样式 */
+.user-filter-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.filter-tab {
+    padding: 10px 24px;
+    background: #f8f9fa;
+    color: #666;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.filter-tab:hover {
+    background: #e9ecef;
+    border-color: #5B9BD5;
+    color: #5B9BD5;
+}
+
+.filter-tab.active {
+    background: linear-gradient(135deg, #5B9BD5 0%, #87CEEB 100%);
+    color: white;
+    border-color: #5B9BD5;
+    font-weight: 600;
+}
+
 .search-box {
     margin-bottom: 20px;
 }
@@ -1200,6 +1233,34 @@ tr:last-child td {
     font-size: 12px;
     color: #666;
     word-break: break-all;
+}
+
+/* IP地址显示样式 - 解决IPv6地址过长导致页面布局问题 */
+.ip-address {
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
+    vertical-align: bottom;
+}
+
+/* 表格中的IP地址单元格 */
+td.ip-address-cell {
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 详情页面中的IP地址 */
+.detail-item .ip-address-inline {
+    max-width: 250px;
+    display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: middle;
 }
 
 /* 用户历史日志样式 */

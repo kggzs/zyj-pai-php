@@ -308,13 +308,22 @@ function showUserAgreement() {
             return res.text();
         })
         .then(html => {
-            // 提取body内容，但保留样式
+            // 提取样式和body内容
             const parser = new DOMParser();
             const doc = parser.parseFromString(html, 'text/html');
+            
+            // 提取head中的style标签
+            const styleTags = doc.head.querySelectorAll('style');
+            let styles = '';
+            styleTags.forEach(style => {
+                styles += style.outerHTML;
+            });
+            
+            // 提取body内容
             const bodyContent = doc.body.innerHTML;
             
-            // 移除body标签的样式，保留内容样式
-            content.innerHTML = bodyContent;
+            // 组合样式和内容
+            content.innerHTML = styles + bodyContent;
             modal.style.display = 'block';
             
             // 滚动到顶部
